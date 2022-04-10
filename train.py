@@ -1,0 +1,188 @@
+from __future__ import division
+from tools.utils import read_image
+import sys
+import numpy as np
+import os
+import yimage
+from tools.metrics import get_acc_info, get_acc_v2
+from timm.optim import create_optimizer_v2
+import torchvision.transforms as standard_transforms
+from torch.utils.data import DataLoader
+import tqdm
+import tools.transform as tr
+from tools.dataloader import IsprsSegmentation
+import tools
+import torch
+from tensorboardX import SummaryWriter
+from networks.get_model import get_net
+from tools.losses import get_loss
+from tools.parse_config_yaml import parse_yaml
+import torch.onnx
+
+
+def main():
+    composed_transforms_train = standard_transforms.Compose([
+        tr.RandomHorizontalFlip(),
+        tr.RandomVerticalFlip(),
+        tr.ScaleNRotate(rots=(-15, 15), scales=(0.9, 1.1)),
+        tr.FixedResize(param_dict['img_size']),
+        tr.Normalize(mean=param_dict['mean'], std=param_dict['std']),
+        tr.ToTensor()])  # data pocessing and data augumentation
+    composed_transforms_val = standard_transforms.Compose([
+        tr.FixedResize(param_dict['img_size']),
+        tr.Normalize(mean=param_dict['mean'], std=param_dict['std']),
+        tr.ToTensor()])  # data pocessing and data augumentation
+
+    train_dataset = IsprsSegmentation(txt_path=param_dict['train_list'], transform=composed_transforms_train)  # get data
+    trainloader = DataLoader(train_dataset, batch_size=param_dict['batch_size'], shuffle=True,
+                             num_workers=param_dict['num_workers'], drop_last=True)  # define traindata
+    val_dataset = IsprsSegmentation(txt_path=param_dict['val_list'], transform=composed_transforms_val)  # get data
+    valloader = DataLoader(val_dataset, batch_size=param_dict['batch_size'], shuffle=False,
+                           num_workers=param_dict['num_workers'], drop_last=True)  # define traindata
+
+    if param_dict['use_gpu']:
+        if len(gpu_list) > 1:
+            model = torch.nn.DataParallel(frame_work, device_ids=gpu_list)  # use gpu to train
+        else:
+            model = frame_work
+        if find_new_file(param_dict['model_dir']) is not None:
+            model.load_state_dict(torch.load(find_new_file(param_dict['model_dir'])))
+            print('load the model %s' % find_new_file(param_dict['model_dir']))
+        model.cuda()
+    else:
+        model = frame_work
+        if find_new_file(param_dict['model_dir']) is not None:
+            model.load_state_dict(torch.load(find_new_file(param_dict['model_dir'])))
+            print('load the model %s' % find_new_file(param_dict['model_dir']))
+
+    criterion = get_loss(param_dict['loss_type'])  # define loss
+    optimizer = create_optimizer_v2(model, 'adam', learning_rate=param_dict['base_lr'])
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.8)
+    writer = SummaryWriter(os.path.join(param_dict['save_dir_model'], 'runs'))
+    best_val_acc = 0.0
+    with open(os.path.join(param_dict['save_dir_model'], 'log.txt'), 'w') as ff:
+        for epoch in range(param_dict['epoches']):
+            model.train()
+            running_loss = 0.0
+            batch_num = 0
+            for i, data in tqdm.tqdm(enumerate(trainloader)):  # get data
+                images, labels = data['image'], data['gt']
+                i += images.size()[0]
+                labels = labels.view(images.size()[0], param_dict['img_size'], param_dict['img_size']).long()
+                if param_dict['use_gpu']:
+                    images = images.cuda()
+                    labels = labels.cuda()
+                optimizer.zero_grad()
+                outputs = model(images)
+                losses = criterion(outputs, labels)  # calculate loss
+                losses.backward()  #
+                optimizer.step()
+                running_loss += losses
+                batch_num += images.size()[0]
+                # break
+            print('epoch is {}, train loss is {}'.format(epoch, running_loss.item() / batch_num))
+            cur_lr = optimizer.param_groups[0]['lr']
+            writer.add_scalar('learning_rate', cur_lr, epoch)
+            writer.add_scalar('train_loss', running_loss / batch_num, epoch)
+            scheduler.step()
+            if epoch % param_dict['save_iter'] == 0:
+                val_miou, val_acc, val_f1, val_loss = eval(valloader, model, criterion, epoch)
+                writer.add_scalar('val_miou', val_miou, epoch)
+                writer.add_scalar('val_acc', val_acc, epoch)
+                writer.add_scalar('val_f1', val_f1, epoch)
+                writer.add_scalar('val_loss', val_loss, epoch)
+                cur_log = 'epoch:{}, learning_rate:{}, train_loss:{}, val_loss:{}, val_f1:{}, val_acc:{}, val_miou:{}\n'.format(
+                    str(epoch), str(cur_lr), str(running_loss.item() / batch_num), str(val_loss), str(val_f1),
+                    str(val_acc),
+                    str(val_miou)
+                )
+                print(cur_log)
+                ff.writelines(str(cur_log))
+                if val_miou > best_val_acc:
+                    torch.save(model.state_dict(), os.path.join(param_dict['model_dir'], 'valiou_best.pth'))
+                    best_val_acc = val_miou
+
+
+def eval(valloader, model, criterion, epoch):
+    val_num = valloader.dataset.num_sample
+    label_all = np.zeros((val_num,) + (param_dict['img_size'], param_dict['img_size']), np.uint8)
+    predict_all = np.zeros((val_num,) + (param_dict['img_size'], param_dict['img_size']), np.uint8)
+    model.eval()
+    if param_dict['val_visual']:
+        if os.path.exists(os.path.join(param_dict['save_dir_model'], 'val_visual')) is False:
+            os.mkdir(os.path.join(param_dict['save_dir_model'], 'val_visual'))
+        if os.path.exists(os.path.join(param_dict['save_dir_model'], 'val_visual', str(epoch))) is False:
+            os.mkdir(os.path.join(param_dict['save_dir_model'], 'val_visual', str(epoch)))
+            os.mkdir(os.path.join(param_dict['save_dir_model'], 'val_visual', str(epoch), 'slice'))
+    with torch.no_grad():
+        batch_num = 0
+        val_loss = 0.0
+        for i, data in tqdm.tqdm(enumerate(valloader), ascii=True, desc="validate step"):  # get data
+            images, labels, img_path, gt_path = data['image'], data['gt'], data['img_path'], data['gt_path']
+            i += images.size()[0]
+            labels = labels.view(images.size()[0], param_dict['img_size'], param_dict['img_size']).long()
+            if param_dict['use_gpu']:
+                images = images.cuda()
+                labels = labels.cuda()
+            if param_dict['extra_loss']:
+                outputs, outputs_f, outputs_b = model(images)  # get prediction
+            else:
+                outputs = model(images)
+            vallosses = criterion(outputs, labels)
+            pred = tools.utils.out2pred(outputs, param_dict['num_class'], param_dict['thread'])
+            batch_num += images.size()[0]
+            val_loss += vallosses.item()
+            if param_dict['val_visual']:
+                for kk in range(len(img_path)):
+                    cur_name = os.path.basename(img_path[kk])
+                    pred_sub = pred[kk, :, :]
+                    label_all[i] = read_image(gt_path[kk], 'gt')
+                    predict_all[i] = pred_sub
+                    yimage.io.write_image(
+                        os.path.join(param_dict['save_dir_model'], 'val_visual', str(epoch), 'slice', cur_name),
+                        pred_sub,
+                        color_table=param_dict['color_table'])
+        precision, recall, f1ccore, OA, IoU, mIOU = get_acc_v2(
+            label_all, predict_all,
+            param_dict['num_class'] + 1 if param_dict['num_class'] == 1 else param_dict['num_class'],
+            os.path.join(param_dict['save_dir_model'], 'val_visual', str(epoch)))
+        val_loss = val_loss / batch_num
+    return IoU[1], OA, f1ccore[1], val_loss
+
+
+def find_new_file(dir):
+    file_lists = os.listdir(dir)
+    file_lists.sort(key=lambda fn: os.path.getmtime(dir + fn)
+    if not os.path.isdir(dir + fn) else 0)
+    if len(file_lists) != 0:
+        file = os.path.join(dir, file_lists[-1])
+        return file
+    else:
+        return None
+
+
+if __name__ == '__main__':
+    if len(sys.argv) == 1:
+        yaml_file = 'config.yaml'
+    else:
+        yaml_file = sys.argv[1]
+    param_dict = parse_yaml(yaml_file)
+
+    print(param_dict)
+    os.environ["CUDA_VISIBLE_DEVICES"] = param_dict['gpu_id']
+    gpu_list = [i for i in range(len(param_dict['gpu_id'].split(',')))]
+    gx = torch.cuda.device_count()
+    print('useful gpu count is {}'.format(gx))
+
+    frame_work = get_net(param_dict['model_name'], param_dict['input_bands'], param_dict['num_class'],
+                         param_dict['img_size'], param_dict['pretrained_model'])
+    if param_dict['vis_graph']:
+        sampledata = torch.rand((1, param_dict['input_bands'], param_dict['img_size'], param_dict['img_size']))
+        o = frame_work(sampledata)
+        onnx_path = os.path.join(param_dict['save_dir_model'], "model_vis.onnx")
+        torch.onnx.export(frame_work, sampledata, onnx_path, opset_version=11)
+        netron.start(onnx_path)
+
+    if os.path.exists(param_dict['model_dir']) is False:
+        os.mkdir(param_dict['model_dir'])
+    main()

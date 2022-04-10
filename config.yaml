@@ -1,0 +1,37 @@
+batch_size: 4  # 设置批量大小
+use_gpu: True  # 是否使用use_gpu
+img_size: 512  # 输入图片大小
+overlap: 64
+epoches: 300
+base_lr: 0.001  # 学习率
+weight_decay: 2e-5
+momentum: 0.9
+power: 0.99
+gpu_id: '0'
+save_iter: 2
+num_workers: 2
+val_visual: True
+image_driver: 'gdal'   #pillow, gdal
+color_table: 0,0,0,255,255,255,0,255,0,0,0,255
+loss_type: 'bce'
+num_class: 1  # some parameters
+thread: 0.5
+
+model_name: 'SwinUnet'  # ' unet, res_unet_psp, res_unet'
+#pretrained_model: 'pretrained_models/hrnetv2_w64-b47cc881.pth'
+pretrained_model: 'None'
+extra_loss: False
+model_experision: 'v1'
+
+input_bands: 3
+vis_graph: False
+train_gt: 'dataset\CHN6-CUG\val\gt'
+val_gt: 'dataset\CHN6-CUG\val\gt'
+test_gt: 'dataset\CHN6-CUG\val\gt'
+
+#data path
+root_path: 'D:\whu_det\code0407'
+data_name: 'data'
+exp_name: '0401'
+
+pred_path: 'test_result'
