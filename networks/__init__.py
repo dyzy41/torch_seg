@@ -3,4 +3,4 @@ from networks.unet import UNet, Res_UNet_50, Res_UNet_34, Res_UNet_101, Res_UNet
 from networks.denseaspp import DenseASPP
 from networks.transUNet import TransUNet
 from networks.blockAt.BANet import BANet
-from networks.swin_unet.vision_transformer import SwinUnet
+from networks.swin_unet import SwinUnet

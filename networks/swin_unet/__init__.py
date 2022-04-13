@@ -1,1 +1,1 @@
-from networks.swin_unet.vision_transformer import SwinUnet
+from networks.swin_unet.vision_transformer import get_swinUnet as SwinUnet

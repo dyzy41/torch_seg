@@ -52,8 +52,7 @@ class SwinUnet(nn.Module):
         logits = self.activate(logits)
         return logits
 
-    def load_from(self, config):
-        pretrained_path = config.MODEL.PRETRAIN_CKPT
+    def load_from(self, pretrained_path):
         if pretrained_path is not None:
             print("pretrained_path:{}".format(pretrained_path))
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -85,6 +84,11 @@ class SwinUnet(nn.Module):
                         del full_dict[k]
 
             msg = self.swin_unet.load_state_dict(full_dict, strict=False)
-            # print(msg)
         else:
             print("none pretrain")
+
+
+def get_swinUnet(in_c=3, num_class=4, pretrained_path=None):
+    model = SwinUnet(in_c=in_c, num_class=num_class, pretrained_path=pretrained_path)
+    model.load_from(pretrained_path)
+    return model
