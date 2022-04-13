@@ -17,7 +17,7 @@ loss_type: 'bce'
 num_class: 1  # some parameters
 thread: 0.5
 
-model_name: 'SwinUnet'  # ' unet, res_unet_psp, res_unet'
+model_name: 'UNet'  #
 #pretrained_model: 'pretrained_models/hrnetv2_w64-b47cc881.pth'
 pretrained_model: 'None'
 extra_loss: False
@@ -30,8 +30,8 @@ val_gt: 'dataset\CHN6-CUG\val\gt'
 test_gt: 'dataset\CHN6-CUG\val\gt'
 
 #data path
-root_path: 'D:\whu_det\code0407'
-data_name: 'data'
+root_path: 'E:\TempFiles'
+data_name: 'data_debug'
 exp_name: '0401'
 
 pred_path: 'test_result'

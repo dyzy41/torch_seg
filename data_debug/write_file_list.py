@@ -2,9 +2,9 @@ import os
 import random
 import sys
 
-src_path = r'D:\whu_det\dataset\whub'
+src_path = r'F:\0DL_datasets\WHU_building\whub'
 
-state = 'val'
+state = 'test'
 
 image_path = os.path.join(src_path, state, 'image')
 label_path = os.path.join(src_path, state, 'label')

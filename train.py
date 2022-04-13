@@ -56,7 +56,7 @@ def main():
             print('load the model %s' % find_new_file(param_dict['model_dir']))
 
     criterion = get_loss(param_dict['loss_type'])  # define loss
-    optimizer = create_optimizer_v2(model, 'adam', learning_rate=param_dict['base_lr'])
+    optimizer = create_optimizer_v2(model, 'adam', lr=param_dict['base_lr'])
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.8)
     writer = SummaryWriter(os.path.join(param_dict['save_dir_model'], 'runs'))
     best_val_acc = 0.0

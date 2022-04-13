@@ -4,7 +4,7 @@ import yimage
 import tqdm
 import numpy as np
 
-src_path = r'D:\whu_det\dataset\whub'
+src_path = r'F:\0DL_datasets\WHU_building\whub'
 
 
 def resave_lab(path):
@@ -13,8 +13,6 @@ def resave_lab(path):
         cur_lab = yimage.io.read_image(os.path.join(path, item))
         cur_lab = np.where(cur_lab > 0, 0, 1)
         yimage.io.write_image(os.path.join(path, item), cur_lab, color_table=ct)
-
-        print('ok')
 
 
 if __name__ == '__main__':
