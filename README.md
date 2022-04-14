@@ -1,4 +1,4 @@
-这是一个基于pytorch的分割框架  
+这是一个基于pytorch的分割框架,由于做语义分割项目，设置了默认使用GPU计算  
 
 
 现存功能:  
@@ -26,6 +26,13 @@ unet，resunet，deeplab系列，swinunet，denseaspp等等，代码网络结构
 
 将来可以添加的：  
 基于albumentations的数据增强策略  
+
+
+训练步骤：  
+修改config.yaml文件的root_path，这个是项目的总路径，保存文件的路径
+执行./data/write_file_list.py,生成数据路径  
+python train.py训练  
+python test_dataloader.py测试并计算测试精度指标  
 
 
 

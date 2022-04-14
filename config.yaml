@@ -1,5 +1,4 @@
 batch_size: 2  # 设置批量大小
-use_gpu: True  # 是否使用use_gpu
 img_size: 512  # 输入图片大小
 overlap: 64
 epoches: 300
@@ -17,9 +16,9 @@ loss_type: 'bce'
 num_class: 1  # some parameters
 thread: 0.5
 
-model_name: 'SwinUnet'  #
+resume_ckpt: 'E:\TempFiles\0401_files\UNet_v1\pth_UNet\valiou_best.pth'
+model_name: 'UNet'  #
 pretrained_model: 'C:\Users\Administrator\Downloads\swin_tiny_patch4_window7_224.pth'
-#pretrained_model: 'None'
 extra_loss: False
 model_experision: 'v1'
 

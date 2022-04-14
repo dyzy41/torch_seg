@@ -177,15 +177,13 @@ def slide_pred(model, image_path, num_classes=6, crop_size=512, overlap=256, sca
 def load_model(model_path):
     model = get_net(param_dict['model_name'], param_dict['input_bands'], param_dict['num_class'],
                     param_dict['img_size'], param_dict['pretrained_model'])
-    # model = torch.nn.DataParallel(model, device_ids=[0])
-    state_dict = torch.load(model_path)
+    state_dict = torch.load(model_path)  # 加载断点
     new_state_dict = OrderedDict()
     for k, v in state_dict.items():
         name = k[7:]
         new_state_dict[name] = v
     model.load_state_dict(state_dict)
-    if param_dict['use_gpu']:
-        model.cuda()
+    model.cuda()
     model.eval()
     return model
 
@@ -212,8 +210,8 @@ if __name__ == '__main__':
     model_path = os.path.join(param_dict['model_dir'], 'valiou_best.pth')
     print('####################test model is {}'.format(model_path))
 
-    if os.path.exists(param_dict['save_path']) is False:
-        os.mkdir(param_dict['save_path'])
+    if os.path.exists(param_dict['pred_path']) is False:
+        os.mkdir(param_dict['pred_path'])
 
     model = load_model(model_path)
 

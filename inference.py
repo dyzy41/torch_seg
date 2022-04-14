@@ -138,8 +138,7 @@ def load_model(model_path, param_dict):
         name = k[7:]
         new_state_dict[name] = v
     model.load_state_dict(new_state_dict)
-    if param_dict['use_gpu']:
-        model.cuda()
+    model.cuda()
     model.eval()
     return model
 
