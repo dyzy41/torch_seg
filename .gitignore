@@ -1,0 +1,6 @@
+*.pyc
+*.c
+/__pycache__/
+/.idea/
+/data/
+/data_debug/
