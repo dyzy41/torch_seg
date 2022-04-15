@@ -89,8 +89,9 @@ class DSNet(nn.Module):
         self.c4 = DoubleConv(1024, 256)
         self.c3 = DoubleConv(512, 256)
         self.c2 = DoubleConv(256, 256)
+        self.c1 = DoubleConv(256, 128)
 
-        self.outc = OutConv(256, num_class)
+        self.outc = OutConv(128, num_class)
         self.activate = nn.Softmax() if num_class > 1 else nn.Sigmoid()
 
     def fuse_feature(self, small, big, up_scale=2):
@@ -100,9 +101,9 @@ class DSNet(nn.Module):
         return out
 
     def cat_up(self, x1, x2, up_scale=2):
-        out = torch.cat([x1, x2], dim=1)
+        out = x1+x2
         out = F.interpolate(out, scale_factor=up_scale, mode='bilinear')
-        out = self.c3(out)
+        out = self.c1(out)
         return out
 
     def forward(self, x):
@@ -129,7 +130,8 @@ class DSNet(nn.Module):
         f5_2 = self.fuse_feature(f1_4, f4_2, 4)
         f5_1 = self.cat_up(f4_2, f5_2)
 
-        out = self.cat_up(f4_1, f5_1)
+        out = f4_1+f5_1
+        out = F.interpolate(out, scale_factor=2, mode='bilinear')
         out = self.outc(out)
         out = self.activate(out)
         return out
