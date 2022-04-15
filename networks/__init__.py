@@ -4,3 +4,4 @@ from networks.denseaspp import DenseASPP
 from networks.transUNet import TransUNet
 from networks.blockAt.BANet import BANet
 from networks.swin_unet import SwinUnet
+from networks.dsnet.dsnet_v1 import DSNet
