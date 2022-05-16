@@ -4,3 +4,4 @@ from networks.denseaspp import DenseASPP
 from networks.transUNet import TransUNet
 from networks.blockAt.BANet import BANet
 from networks.swin_unet import SwinUnet
+from networks.coarse2fine.unet_sq import UNet_SQ

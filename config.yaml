@@ -16,9 +16,9 @@ loss_type: 'bce'
 num_class: 1  # some parameters
 thread: 0.5
 
-resume_ckpt: 'E:\TempFiles\0401_files\UNet_v1\pth_UNet\valiou_best.pth'
-model_name: 'UNet'  #
-pretrained_model: 'C:\Users\Administrator\Downloads\swin_tiny_patch4_window7_224.pth'
+resume_ckpt: 0
+model_name: 'UNet_SQ'  #
+pretrained_model: ''  # 'download', '', or pretrained model path
 extra_loss: False
 model_experision: 'v1'
 

@@ -46,7 +46,7 @@ def main():
         model = frame_work
     optimizer = create_optimizer_v2(model, 'adam', lr=param_dict['base_lr'])
     lr_schedule = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.8)
-    if param_dict['resume_ckpt']:
+    if param_dict['resume_model']:
         resume_ckpt = param_dict['resume_ckpt']  # 断点路径
         checkpoint = torch.load(resume_ckpt)  # 加载断点
         model.load_state_dict(checkpoint['net'])  # 加载模型可学习参数
