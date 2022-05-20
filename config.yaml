@@ -24,9 +24,6 @@ model_experision: 'v1'
 
 input_bands: 3
 vis_graph: False
-train_gt: 'dataset\CHN6-CUG\val\gt'
-val_gt: 'dataset\CHN6-CUG\val\gt'
-test_gt: 'dataset\CHN6-CUG\val\gt'
 
 #data path
 root_path: 'E:\TempFiles'

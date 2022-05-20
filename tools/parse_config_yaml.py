@@ -32,8 +32,6 @@ def add_param(param_dict):
     param_dict['pred_path'] = os.path.join(param_dict['save_dir_model'], param_dict['pred_path'])
     param_dict['pretrained_model'] = os.path.join(param_dict['root_path'], param_dict['pretrained_model'])
 
-    param_dict['train_gt'] = os.path.join(param_dict['root_path'], param_dict['train_gt'])
-    param_dict['val_gt'] = os.path.join(param_dict['root_path'], param_dict['val_gt'])
     param_dict['color_table'] = list(np.asarray(param_dict['color_table'].split(',')).astype(np.int).reshape(-1, 3))
     param_dict['color_table'] = [tuple(i) for i in param_dict['color_table']]
     return param_dict
