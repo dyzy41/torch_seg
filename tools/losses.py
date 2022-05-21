@@ -110,7 +110,7 @@ class LovaszSoftmax(nn.Module):
 
 def get_loss(loss_type, class_weights=None):
     if loss_type == 'ce':
-        if class_weights is not None:
+        if class_weights is None:
             return CrossEntropyLoss2d()
         else:
             return CrossEntropyLoss2d(weight=class_weights)

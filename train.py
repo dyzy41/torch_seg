@@ -25,11 +25,9 @@ def main():
         tr.RandomHorizontalFlip(),
         tr.RandomVerticalFlip(),
         tr.ScaleNRotate(rots=(-15, 15), scales=(0.9, 1.1)),
-        tr.FixedResize(param_dict['img_size']),
         tr.Normalize(mean=param_dict['mean'], std=param_dict['std']),
         tr.ToTensor()])  # data pocessing and data augumentation
     composed_transforms_val = standard_transforms.Compose([
-        tr.FixedResize(param_dict['img_size']),
         tr.Normalize(mean=param_dict['mean'], std=param_dict['std']),
         tr.ToTensor()])  # data pocessing and data augumentation
 
@@ -38,7 +36,7 @@ def main():
                              num_workers=param_dict['num_workers'], drop_last=True)  # define traindata
     val_dataset = IsprsSegmentation(txt_path=param_dict['val_list'], transform=composed_transforms_val)  # get data
     valloader = DataLoader(val_dataset, batch_size=param_dict['batch_size'], shuffle=False,
-                           num_workers=param_dict['num_workers'], drop_last=True)  # define traindata
+                           num_workers=param_dict['num_workers'])  # define traindata
     start_epoch = 0
     if len(gpu_list) > 1:
         model = torch.nn.DataParallel(frame_work, device_ids=gpu_list)  # use gpu to train
@@ -46,7 +44,7 @@ def main():
         model = frame_work
     optimizer = create_optimizer_v2(model, 'adam', lr=param_dict['base_lr'])
     lr_schedule = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.8)
-    if param_dict['resume_model']:
+    if param_dict['resume_ckpt']:
         resume_ckpt = param_dict['resume_ckpt']  # 断点路径
         checkpoint = torch.load(resume_ckpt)  # 加载断点
         model.load_state_dict(checkpoint['net'])  # 加载模型可学习参数
@@ -55,11 +53,11 @@ def main():
         for state in optimizer.state.values():
             for k, v in state.items():
                 if torch.is_tensor(v):
-                    state[k] = v.cuda()
+                    state[k] = v.to(device)
         start_epoch = checkpoint['epoch']  # 设置开始的epoch
         lr_schedule.load_state_dict(checkpoint['lr_schedule'])  # 加载lr_scheduler
         print('load the model %s' % find_new_file(param_dict['model_dir']))
-    model.cuda()
+    model.to(device)
 
     criterion = get_loss(param_dict['loss_type'])  # define loss
     writer = SummaryWriter(os.path.join(param_dict['save_dir_model'], 'runs'))
@@ -73,9 +71,9 @@ def main():
             for i, data in tqdm.tqdm(enumerate(trainloader)):  # get data
                 images, labels = data['image'], data['gt']
                 i += images.size()[0]
-                labels = labels.view(images.size()[0], param_dict['img_size'], param_dict['img_size']).long()
-                images = images.cuda()
-                labels = labels.cuda()
+                labels = labels.squeeze(1).long()
+                images = images.to(device)
+                labels = labels.to(device)
                 optimizer.zero_grad()
                 outputs = model(images)
                 losses = criterion(outputs, labels)  # calculate loss
@@ -129,9 +127,9 @@ def eval(valloader, model, criterion, epoch):
         for i, data in tqdm.tqdm(enumerate(valloader), ascii=True, desc="validate step"):  # get data
             images, labels, img_path, gt_path = data['image'], data['gt'], data['img_path'], data['gt_path']
             i += images.size()[0]
-            labels = labels.view(images.size()[0], param_dict['img_size'], param_dict['img_size']).long()
-            images = images.cuda()
-            labels = labels.cuda()
+            labels = labels.squeeze(1).long()
+            images = images.to(device)
+            labels = labels.to(device)
             if param_dict['extra_loss']:
                 outputs, outputs_f, outputs_b = model(images)  # get prediction
             else:
@@ -182,6 +180,7 @@ if __name__ == '__main__':
     gpu_list = [i for i in range(len(param_dict['gpu_id'].split(',')))]
     gx = torch.cuda.device_count()
     print('useful gpu count is {}'.format(gx))
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     frame_work = get_net(param_dict['model_name'], param_dict['input_bands'], param_dict['num_class'],
                          param_dict['img_size'], param_dict['pretrained_model'])

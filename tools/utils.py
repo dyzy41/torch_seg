@@ -7,12 +7,14 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import os
 
-
 image_driver = 'gdal'
 if image_driver == 'gdal':
     import yimage
+
+
     def read_image(path, state='img'):
         img = yimage.io.read_image(path)
+        img = cv2.resize(img, (480, 480), interpolation=cv2.INTER_NEAREST)
         if state == 'gt':
             # here input your label process function
             return img
@@ -20,6 +22,8 @@ if image_driver == 'gdal':
             return img
 else:
     from PIL import Image
+
+
     def read_image(path, state='img'):
         pil_img = Image.open(path)
         if state == 'img':

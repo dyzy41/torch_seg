@@ -1,33 +1,34 @@
-batch_size: 2  # 设置批量大小
-img_size: 512  # 输入图片大小
+batch_size: 4  # 设置批量大小
+img_size: 480  # 输入图片大小
 overlap: 64
-epoches: 300
-base_lr: 0.001  # 学习率
+epoches: 130
+base_lr: 0.03  # 学习率
 weight_decay: 2e-5
 momentum: 0.9
 power: 0.99
 gpu_id: '0'
-save_iter: 2
+save_iter: 4
 num_workers: 2
 val_visual: True
 image_driver: 'gdal'   #pillow, gdal
-color_table: 0,0,0,255,255,255,0,255,0,0,0,255
-loss_type: 'bce'
-num_class: 1  # some parameters
+loss_type: 'ce'
+num_class: 12  # some parameters
 thread: 0.5
+color_table: 0
 
 resume_ckpt: 0
-model_name: 'UNet_SQ'  #
+model_name: 'DeepLabV3Plus'  #
 pretrained_model: ''  # 'download', '', or pretrained model path
 extra_loss: False
 model_experision: 'v1'
+
 
 input_bands: 3
 vis_graph: False
 
 #data path
-root_path: 'E:\TempFiles'
-data_name: 'data_debug'
+root_path: 'C:\Users\admin\Documents\0Ccode\temp_files'
+data_name: 'data'
 exp_name: '0401'
 
 pred_path: 'test_result'

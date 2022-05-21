@@ -2,12 +2,12 @@ import os
 import random
 import sys
 
-src_path = r'D:\whu_det\dataset\whub'
+src_path = r'C:\Users\admin\Documents\0Ccode\cls3data'
 
 state = 'test'
 
-image_path = os.path.join(src_path, state, 'image')
-label_path = os.path.join(src_path, state, 'label')
+image_path = os.path.join(src_path, '{}'.format(state))
+label_path = os.path.join(src_path, '{}annot'.format(state))
 
 images = os.listdir(image_path)
 random.shuffle(images)
