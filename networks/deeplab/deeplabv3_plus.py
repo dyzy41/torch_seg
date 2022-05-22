@@ -118,7 +118,7 @@ class DeepLabV3Plus(nn.Module):
         self.head = _DeepLabHead(num_class, c1_channels=256, **kwargs)
         if aux:
             self.auxlayer = _FCNHead(728, num_class)
-        # self.activate = nn.Softmax(dim=1) if num_class > 1 else nn.Sigmoid()
+        self.activate = nn.Softmax(dim=1) if num_class > 1 else nn.Sigmoid()
 
     def base_forward(self, x):
         # Entry flow
@@ -130,7 +130,7 @@ class DeepLabV3Plus(nn.Module):
         c1, c4 = self.base_forward(x)
         x = self.head(c4, c1)
         x = F.interpolate(x, size, mode='bilinear', align_corners=True)
-        # x = self.activate(x)
+        x = self.activate(x)
         return x
 
 
