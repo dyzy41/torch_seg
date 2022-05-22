@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 import yaml
 import os
@@ -12,6 +14,7 @@ def get_base_param(yaml_file):
 
 
 def gen_color_map(num):
+    random.seed(24)
     color_map = []
     while len(color_map) < num:
         r, g, b = np.random.random_integers(0, 255, 3)

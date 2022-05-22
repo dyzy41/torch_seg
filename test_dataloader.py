@@ -8,6 +8,7 @@ import numpy as np
 import torchvision.transforms as standard_transforms
 from torch.utils.data import DataLoader
 import tqdm
+import ttach as tta
 from collections import OrderedDict
 import tools.transform as tr
 from tools.dataloader import IsprsSegmentation
@@ -22,6 +23,15 @@ def test(testloader, model):
     test_num = testloader.dataset.num_sample
     label_all = np.zeros((test_num,) + (param_dict['img_size'], param_dict['img_size']), np.uint8)
     predict_all = np.zeros((test_num,) + (param_dict['img_size'], param_dict['img_size']), np.uint8)
+    tta_transforms = tta.Compose(
+        [
+            tta.VerticalFlip(),
+            tta.HorizontalFlip(),
+            tta.Rotate90(angles=[0, 180]),
+            # tta.Scale(scales=[1, 2, 4]),
+            # tta.Multiply(factors=[0.8, 1, 1.25]),
+        ]
+    )
     if os.path.exists(param_dict['pred_path']) is False:
         os.mkdir(param_dict['pred_path'])
     with torch.no_grad():
@@ -30,7 +40,11 @@ def test(testloader, model):
             images, labels, img_path, gt_path = data['image'], data['gt'], data['img_path'], data['gt_path']
             i += images.size()[0]
             images = images.cuda()
-            outputs = model(images)
+            if param_dict['tta']:
+                tta_model = tta.SegmentationTTAWrapper(model, tta_transforms, merge_mode='mean')
+                outputs = tta_model(images)
+            else:
+                outputs = model(images)
             pred = tools.utils.out2pred(outputs, param_dict['num_class'], param_dict['thread'])
             batch_num += images.size()[0]
             for kk in range(len(img_path)):
@@ -85,7 +99,7 @@ if __name__ == '__main__':
 
 
     road_test = IsprsSegmentation(txt_path=param_dict['test_list'], transform=composed_transforms_val)  # get data
-    testloader = DataLoader(road_test, batch_size=16, shuffle=False,
+    testloader = DataLoader(road_test, batch_size=2, shuffle=False,
                            num_workers=param_dict['num_workers'], drop_last=False)  # define traindata
 
     model = load_model(model_path)

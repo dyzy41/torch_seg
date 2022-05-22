@@ -15,10 +15,11 @@ loss_type: 'ce'
 num_class: 12  # some parameters
 thread: 0.5
 color_table: 0
+tta: True
 
 resume_ckpt: 0
 model_name: 'DeepLabV3Plus'  #
-pretrained_model: ''  # 'download', '', or pretrained model path
+pretrained_model: 'download'  # 'download', '', or pretrained model path
 extra_loss: False
 model_experision: 'v1'
 
@@ -31,4 +32,4 @@ root_path: 'C:\Users\admin\Documents\0Ccode\temp_files'
 data_name: 'data'
 exp_name: '0401'
 
-pred_path: 'test_result'
+pred_path: 'test_result2'

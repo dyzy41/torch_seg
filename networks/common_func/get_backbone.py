@@ -3,7 +3,7 @@ import torch
 
 def get_model(model_name, in_c=3, checkpoint_path='None'):
     if checkpoint_path == 'download':
-        print('download the pretrained model')
+        print('download the pretrained model into local .cache')
         model = timm.create_model(model_name, pretrained=True, features_only=True, in_chans=in_c)
         return model
     elif checkpoint_path == '':
