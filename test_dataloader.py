@@ -90,10 +90,10 @@ if __name__ == '__main__':
     gx = torch.cuda.device_count()
     print('useful gpu count is {}'.format(gx))
 
-    model_path = os.path.join(param_dict['model_dir'], 'valiou_best.pth')
+    model_path = os.path.join(param_dict['model_dir'], 'valiou_best_140_0.9145631730910305.pth')
 
     composed_transforms_val = standard_transforms.Compose([
-        tr.FixedResize(param_dict['img_size']),
+        # tr.FixedResize(param_dict['img_size']),
         tr.Normalize(mean=param_dict['mean'], std=param_dict['std']),
         tr.ToTensor()])  # data pocessing and data augumentation
 

@@ -49,7 +49,6 @@ def main():
         checkpoint = torch.load(resume_ckpt)  # 加载断点
         model.load_state_dict(checkpoint['net'])  # 加载模型可学习参数
         optimizer.load_state_dict(checkpoint['optimizer'])
-        optimizer.load_state_dict(checkpoint['optimizer'])
         for state in optimizer.state.values():
             for k, v in state.items():
                 if torch.is_tensor(v):
@@ -99,18 +98,20 @@ def main():
                 )
                 print(cur_log)
                 ff.writelines(str(cur_log))
+                checkpoint = {
+                    "net": model.state_dict(),
+                    'optimizer': optimizer.state_dict(),
+                    'lr_schedule': lr_schedule.state_dict(),
+                    "epoch": epoch
+                }
                 if val_miou > best_val_acc:
-                    checkpoint = {
-                        "net": model.state_dict(),
-                        'optimizer': optimizer.state_dict(),
-                        'lr_schedule': lr_schedule.state_dict(),
-                        "epoch": epoch
-                    }
                     if param_dict['save_mode'] == 'best':
                         torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'valiou_best.pth'))
                     else:
                         torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'valiou_best_{}_{}.pth'.format(epoch, val_miou)))
                     best_val_acc = val_miou
+                torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'last_model.pth'))
+
 
 
 def eval(valloader, model, criterion, epoch):
