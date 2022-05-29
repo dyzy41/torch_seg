@@ -18,7 +18,7 @@ thread: 0.5
 color_table: 0,0,0,255,255,255
 tta: False
 
-resume_ckpt: 'E:\0Epaper\whub\0529_files\Res_UNet_50_v2\pth_Res_UNet_50\valiou_best_155_0.9168097587326944.pth'
+resume_ckpt: 0
 model_name: 'Res_UNet_50'  #
 pretrained_model: 'download'  # 'download', '', or pretrained model path
 extra_loss: False
