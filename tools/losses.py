@@ -2,8 +2,26 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
-#from sklearn.utils import class_weight
 from tools.lovasz_losses import lovasz_softmax
+
+
+class EdgeConv(nn.Module):
+    def __init__(self):
+        super(EdgeConv, self).__init__()
+        self.conv_op = nn.Conv2d(1, 1, kernel_size=3, padding=1, bias=False)
+        sobel_kernel = np.array([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]], dtype='float32')
+        sobel_kernel = sobel_kernel.reshape((1, 1, 3, 3))
+        self.conv_op.weight.data = torch.from_numpy(sobel_kernel)
+    def forward(self, x):
+        x = x.unsqueeze(1)
+        out = self.conv_op(x)
+        return out
+
+
+def BoundaryLoss(prediction, label):
+    cost = torch.nn.functional.mse_loss(
+            prediction.float(),label.float())
+    return torch.sum(cost)
 
 
 def make_one_hot(labels, classes):
@@ -43,7 +61,24 @@ class BCELoss(nn.Module):
     def forward(self, output, target):
         output = output.squeeze(1)
         loss = self.BCE(output, target.float())
+
         return loss
+
+
+class BCE_BDLoss(nn.Module):
+    def __init__(self, loss_weight):
+        super(BCE_BDLoss, self).__init__()
+        self.BCE = nn.BCELoss()
+        self.loss_weight = loss_weight
+        self.edge_conv = EdgeConv().cuda()
+
+    def forward(self, output, target):
+        output = output.squeeze(1)
+        loss = self.BCE(output, target.float())
+        output_bd = self.edge_conv(output)
+        target_bd = self.edge_conv(target.float())
+        loss_bd = BoundaryLoss(output_bd, target_bd)
+        return loss*self.loss_weight[0]+loss_bd*self.loss_weight[1]
 
 
 class DiceLoss(nn.Module):
@@ -124,5 +159,7 @@ def get_loss(loss_type, class_weights=None):
         return LovaszSoftmax()
     elif loss_type == 'bce':
         return BCELoss()
+    elif loss_type == 'bce_bd':
+        return BCE_BDLoss([0.7, 0.3])
     else:
         return None

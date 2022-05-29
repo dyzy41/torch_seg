@@ -106,7 +106,10 @@ def main():
                         'lr_schedule': lr_schedule.state_dict(),
                         "epoch": epoch
                     }
-                    torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'valiou_best.pth'))
+                    if param_dict['save_mode'] == 'best':
+                        torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'valiou_best.pth'))
+                    else:
+                        torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'valiou_best_{}_{}.pth'.format(epoch, val_miou)))
                     best_val_acc = val_miou
 
 
