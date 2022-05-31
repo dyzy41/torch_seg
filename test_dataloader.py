@@ -15,6 +15,7 @@ from tools.dataloader import IsprsSegmentation
 import tools
 import torch
 from networks.get_model import get_net
+from tools.data_aug import val_aug
 from tools.parse_config_yaml import parse_yaml
 import torch.onnx
 
@@ -90,15 +91,9 @@ if __name__ == '__main__':
     gx = torch.cuda.device_count()
     print('useful gpu count is {}'.format(gx))
 
-    model_path = os.path.join(param_dict['model_dir'], 'valiou_best_140_0.9145631730910305.pth')
+    model_path = os.path.join(param_dict['model_dir'], 'valiou_best_20_0.9043542666877542.pth')
 
-    composed_transforms_val = standard_transforms.Compose([
-        # tr.FixedResize(param_dict['img_size']),
-        tr.Normalize(mean=param_dict['mean'], std=param_dict['std']),
-        tr.ToTensor()])  # data pocessing and data augumentation
-
-
-    road_test = IsprsSegmentation(txt_path=param_dict['test_list'], transform=composed_transforms_val)  # get data
+    road_test = IsprsSegmentation(txt_path=param_dict['test_list'], transform=val_aug(param_dict['mean'], param_dict['std']))  # get data
     testloader = DataLoader(road_test, batch_size=param_dict['batch_size'], shuffle=False,
                            num_workers=param_dict['num_workers'], drop_last=False)  # define traindata
 

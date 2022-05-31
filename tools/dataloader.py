@@ -1,6 +1,6 @@
 from __future__ import print_function, division
 import os
-import cv2
+import torch
 import numpy as np
 from torch.utils.data import Dataset
 from tools import utils
@@ -27,9 +27,10 @@ class IsprsSegmentation(Dataset):
 
     def __getitem__(self, index):
         _img, _target, img_path, gt_path = self._make_img_gt_point_pair(index)
-        sample = {'image': _img, 'gt': _target}
-        if self.transform is not None:
-            sample = self.transform(sample)
+        aug = self.transform(image=_img, mask=_target)
+        sample = {'image': aug['image'], 'gt': aug['mask']}
+        # if self.transform is not None:
+        #     sample = self.transform(sample)
         sample['img_path'] = img_path
         sample['gt_path'] = gt_path
         return sample

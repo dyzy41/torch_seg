@@ -1,7 +1,8 @@
 import re
 import functools
 import shutil
-import torch, cv2
+import torch
+import cv2
 import numpy as np
 import torch.nn as nn
 import matplotlib.pyplot as plt

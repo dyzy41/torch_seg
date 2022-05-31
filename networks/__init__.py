@@ -5,4 +5,4 @@ from networks.transUNet import TransUNet
 from networks.blockAt.BANet import BANet
 from networks.swin_unet import SwinUnet
 from networks.coarse2fine.unet_sq import UNet_SQ
-from networks.mfnet.mfnet_v1 import MFNet50
+from networks.mfnet.mfnet_v2 import MFNet50

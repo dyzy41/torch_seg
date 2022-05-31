@@ -4,12 +4,11 @@ import sys
 import numpy as np
 import os
 import yimage
-from tools.metrics import get_acc_info, get_acc_v2
+from tools.metrics import get_acc_v2
 from timm.optim import create_optimizer_v2
-import torchvision.transforms as standard_transforms
 from torch.utils.data import DataLoader
 import tqdm
-import tools.transform as tr
+from tools.data_aug import train_aug, val_aug
 from tools.dataloader import IsprsSegmentation
 import tools
 import torch
@@ -21,20 +20,10 @@ import torch.onnx
 
 
 def main():
-    composed_transforms_train = standard_transforms.Compose([
-        tr.RandomHorizontalFlip(),
-        tr.RandomVerticalFlip(),
-        tr.ScaleNRotate(rots=(-15, 15), scales=(0.9, 1.1)),
-        tr.Normalize(mean=param_dict['mean'], std=param_dict['std']),
-        tr.ToTensor()])  # data pocessing and data augumentation
-    composed_transforms_val = standard_transforms.Compose([
-        tr.Normalize(mean=param_dict['mean'], std=param_dict['std']),
-        tr.ToTensor()])  # data pocessing and data augumentation
-
-    train_dataset = IsprsSegmentation(txt_path=param_dict['train_list'], transform=composed_transforms_train)  # get data
+    train_dataset = IsprsSegmentation(txt_path=param_dict['train_list'], transform=train_aug(param_dict['mean'], param_dict['std']))  # get data
     trainloader = DataLoader(train_dataset, batch_size=param_dict['batch_size'], shuffle=True,
                              num_workers=param_dict['num_workers'], drop_last=True)  # define traindata
-    val_dataset = IsprsSegmentation(txt_path=param_dict['val_list'], transform=composed_transforms_val)  # get data
+    val_dataset = IsprsSegmentation(txt_path=param_dict['val_list'], transform=val_aug(param_dict['mean'], param_dict['std']))  # get data
     valloader = DataLoader(val_dataset, batch_size=param_dict['batch_size'], shuffle=False,
                            num_workers=param_dict['num_workers'])  # define traindata
     start_epoch = 0
@@ -70,7 +59,7 @@ def main():
             for i, data in tqdm.tqdm(enumerate(trainloader)):  # get data
                 images, labels = data['image'], data['gt']
                 i += images.size()[0]
-                labels = labels.squeeze(1).long()
+                labels = labels.long()
                 images = images.to(device)
                 labels = labels.to(device)
                 optimizer.zero_grad()
@@ -131,7 +120,7 @@ def eval(valloader, model, criterion, epoch):
         for i, data in tqdm.tqdm(enumerate(valloader), ascii=True, desc="validate step"):  # get data
             images, labels, img_path, gt_path = data['image'], data['gt'], data['img_path'], data['gt_path']
             i += images.size()[0]
-            labels = labels.squeeze(1).long()
+            labels = labels.long()
             images = images.to(device)
             labels = labels.to(device)
             if param_dict['extra_loss']:
