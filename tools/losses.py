@@ -130,6 +130,26 @@ class CE_DiceLoss(nn.Module):
         return CE_loss + dice_loss
 
 
+class TriLoss(nn.Module):
+    def __init__(self, reduction='mean'):
+        super(TriLoss, self).__init__()
+        self.dice = DiceLoss()
+        weights_f = torch.tensor([0.01, 1]).cuda().float()
+        weights_b = torch.tensor([1, 0.01]).cuda().float()
+        self.cef = nn.CrossEntropyLoss(weight=weights_f, reduction=reduction)
+        self.ceb = nn.CrossEntropyLoss(weight=weights_b, reduction=reduction)
+        self.BCE = nn.BCELoss()
+
+    def forward(self, output, target):
+        out, out_b, out_f = output
+        out = out.squeeze(1)
+        losses1 = self.BCE(out, target.float())  # calculate loss
+        losses_f = self.cef(out_f, target)  # calculate loss
+        losses_b = self.ceb(out_b, target)  # calculate loss
+        losses = losses1 + losses_b * 0.3 + losses_f * 0.7
+        return losses
+
+
 class LovaszSoftmax(nn.Module):
     def __init__(self, classes='present', per_image=False, ignore_index=255):
         super(LovaszSoftmax, self).__init__()
@@ -161,5 +181,7 @@ def get_loss(loss_type, class_weights=None):
         return BCELoss()
     elif loss_type == 'bce_bd':
         return BCE_BDLoss([0.7, 0.3])
+    elif loss_type == 'triple':
+        return TriLoss()
     else:
         return None
