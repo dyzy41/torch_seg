@@ -128,7 +128,10 @@ def eval(valloader, model, criterion, epoch):
             else:
                 outputs = model(images)
             vallosses = criterion(outputs, labels)
-            pred = tools.utils.out2pred(outputs, param_dict['num_class'], param_dict['thread'])
+            if param_dict['loss_type'] == 'triple':
+                pred = tools.utils.out2pred(outputs[0], param_dict['num_class'], param_dict['thread'])
+            else:
+                pred = tools.utils.out2pred(outputs, param_dict['num_class'], param_dict['thread'])
             batch_num += images.size()[0]
             val_loss += vallosses.item()
             if param_dict['val_visual']:
