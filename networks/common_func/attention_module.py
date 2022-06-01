@@ -91,7 +91,7 @@ class PAM_CAM_Layer(nn.Module):
         super(PAM_CAM_Layer, self).__init__()
 
         self.attn = nn.Sequential(
-            nn.Conv2d(in_ch * 2, in_ch, kernel_size=3, padding=1),
+            nn.Conv2d(in_ch, in_ch, kernel_size=3, padding=1),
             nn.BatchNorm2d(in_ch),
             nn.PReLU(),
             PAM_Module(in_ch) if use_pam else CAM_Module(in_ch),
