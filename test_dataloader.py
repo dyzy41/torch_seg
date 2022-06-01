@@ -29,8 +29,8 @@ def test(testloader, model):
             tta.VerticalFlip(),
             tta.HorizontalFlip(),
             tta.Rotate90(angles=[0, 180]),
-            # tta.Scale(scales=[1, 2, 4]),
-            # tta.Multiply(factors=[0.8, 1, 1.25]),
+            tta.Scale(scales=[1, 2, 4]),
+            tta.Multiply(factors=[0.8, 1, 1.25]),
         ]
     )
     if os.path.exists(param_dict['pred_path']) is False:
