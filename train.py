@@ -69,7 +69,6 @@ def main():
                 optimizer.step()
                 running_loss += losses
                 batch_num += images.size()[0]
-                break
             print('epoch is {}, train loss is {}'.format(epoch, running_loss.item() / batch_num))
             cur_lr = optimizer.param_groups[0]['lr']
             writer.add_scalar('learning_rate', cur_lr, epoch)
@@ -145,7 +144,6 @@ def eval(valloader, model, criterion, epoch):
                         os.path.join(param_dict['save_dir_model'], 'val_visual', str(epoch), 'slice', cur_name),
                         pred_sub,
                         color_table=param_dict['color_table'])
-            break
         precision, recall, f1ccore, OA, IoU, mIOU = get_acc_v2(
             label_all, predict_all,
             param_dict['num_class'] + 1 if param_dict['num_class'] == 1 else param_dict['num_class'],

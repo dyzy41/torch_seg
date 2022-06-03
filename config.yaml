@@ -1,14 +1,14 @@
-batch_size: 24  # 设置批量大小
+batch_size: 2  # 设置批量大小
 img_size: 512  # 输入图片大小
 overlap: 64
-epoches: 4
-base_lr: 0.001  # 学习率
+epoches: 240
+base_lr: 0.03  # 学习率
 optim: 'sgd'
 weight_decay: 2e-5
 momentum: 0.9
 power: 0.99
 gpu_id: '0'
-save_iter: 2
+save_iter: 5
 save_mode: 'all'  #best, all
 num_workers: 4
 val_visual: True
@@ -23,7 +23,7 @@ resume_ckpt: 0
 model_name: 'MFNet50_v4'  #
 pretrained_model: 'download'  # 'download', '', or pretrained model path
 extra_loss: False
-model_experision: '_f1'
+model_experision: '0'
 
 
 input_bands: 3
