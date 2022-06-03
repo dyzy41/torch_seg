@@ -31,8 +31,8 @@ def main():
         model = torch.nn.DataParallel(frame_work, device_ids=gpu_list)  # use gpu to train
     else:
         model = frame_work
-    optimizer = create_optimizer_v2(model, 'adam', lr=param_dict['base_lr'])
-    lr_schedule = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.8)
+    optimizer = create_optimizer_v2(model, opt=param_dict['optim'], lr=param_dict['base_lr'], weight_decay=float(param_dict['weight_decay']), momentum=param_dict['momentum'])
+    lr_schedule = torch.optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.8)
     if param_dict['resume_ckpt']:
         resume_ckpt = param_dict['resume_ckpt']  # 断点路径
         checkpoint = torch.load(resume_ckpt)  # 加载断点
@@ -52,7 +52,7 @@ def main():
 
     best_val_acc = 0.0
     with open(os.path.join(param_dict['save_dir_model'], 'log.txt'), 'w') as ff:
-        for epoch in range(start_epoch, param_dict['epoches']):
+        for epoch in range(start_epoch, param_dict['epoches']+1):
             model.train()
             running_loss = 0.0
             batch_num = 0
@@ -69,6 +69,7 @@ def main():
                 optimizer.step()
                 running_loss += losses
                 batch_num += images.size()[0]
+                break
             print('epoch is {}, train loss is {}'.format(epoch, running_loss.item() / batch_num))
             cur_lr = optimizer.param_groups[0]['lr']
             writer.add_scalar('learning_rate', cur_lr, epoch)
@@ -144,6 +145,7 @@ def eval(valloader, model, criterion, epoch):
                         os.path.join(param_dict['save_dir_model'], 'val_visual', str(epoch), 'slice', cur_name),
                         pred_sub,
                         color_table=param_dict['color_table'])
+            break
         precision, recall, f1ccore, OA, IoU, mIOU = get_acc_v2(
             label_all, predict_all,
             param_dict['num_class'] + 1 if param_dict['num_class'] == 1 else param_dict['num_class'],

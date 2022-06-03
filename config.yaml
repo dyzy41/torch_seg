@@ -1,28 +1,29 @@
-batch_size: 2  # 设置批量大小
+batch_size: 24  # 设置批量大小
 img_size: 512  # 输入图片大小
 overlap: 64
-epoches: 240
+epoches: 4
 base_lr: 0.001  # 学习率
+optim: 'sgd'
 weight_decay: 2e-5
 momentum: 0.9
 power: 0.99
 gpu_id: '0'
-save_iter: 5
+save_iter: 2
 save_mode: 'all'  #best, all
 num_workers: 4
 val_visual: True
 image_driver: 'gdal'   #pillow, gdal
-loss_type: 'triple'
+loss_type: 'bce'
 num_class: 1  # some parameters
 thread: 0.5
 color_table: 0,0,0,255,255,255
 tta: False
 
 resume_ckpt: 0
-model_name: 'TwinNet50'  #
+model_name: 'MFNet50_v4'  #
 pretrained_model: 'download'  # 'download', '', or pretrained model path
 extra_loss: False
-model_experision: 'debug'
+model_experision: '_f1'
 
 
 input_bands: 3
