@@ -46,7 +46,10 @@ def test(testloader, model):
                 outputs = tta_model(images)
             else:
                 outputs = model(images)
-            pred = tools.utils.out2pred(outputs, param_dict['num_class'], param_dict['thread'])
+            if param_dict['loss_type'] == 'triple':
+                pred = tools.utils.out2pred(outputs[0], param_dict['num_class'], param_dict['thread'])
+            else:
+                pred = tools.utils.out2pred(outputs, param_dict['num_class'], param_dict['thread'])
             batch_num += images.size()[0]
             for kk in range(len(img_path)):
                 cur_name = os.path.basename(img_path[kk])
