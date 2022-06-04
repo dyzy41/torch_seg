@@ -27,8 +27,8 @@ def update_param(param_dict):
     cur_path = os.getcwd()
 
     if param_dict['input_bands'] == 3:
-        param_dict['mean'] = (0.472455, 0.320782, 0.318403)
-        param_dict['std'] = (0.215084, 0.408135, 0.409993)
+        param_dict['mean'] = (0.44129156679794596, 0.44795460328049425, 0.413108101065775)
+        param_dict['std'] = (0.026678260790120648, 0.02608847981918134, 0.02744789442214232)
     else:
         param_dict['mean'] = (0.472455, 0.320782, 0.318403, 0.357)
         param_dict['std'] = (0.215084, 0.408135, 0.409993, 0.195)
