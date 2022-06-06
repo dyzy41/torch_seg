@@ -1,9 +1,9 @@
-batch_size: 2  # 设置批量大小
+batch_size: 16  # 设置批量大小
 img_size: 512  # 输入图片大小
 overlap: 64
-epoches: 240
-base_lr: 0.03  # 学习率
-optim: 'sgd'
+epoches: 300
+base_lr: 0.01  # 学习率
+optim: 'adam'
 weight_decay: 2e-5
 momentum: 0.9
 power: 0.99
@@ -20,10 +20,10 @@ color_table: 0,0,0,255,255,255
 tta: False
 
 resume_ckpt: 0
-model_name: 'MFNet50_v4'  #
+model_name: 'DeepLabV3Plus'  #
 pretrained_model: 'download'  # 'download', '', or pretrained model path
 extra_loss: False
-model_experision: '0'
+model_experision: '00'
 
 
 input_bands: 3

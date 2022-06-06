@@ -94,7 +94,7 @@ if __name__ == '__main__':
     gx = torch.cuda.device_count()
     print('useful gpu count is {}'.format(gx))
 
-    model_path = os.path.join(param_dict['model_dir'], 'valiou_best_50_0.9018113408770377.pth')
+    model_path = os.path.join(param_dict['model_dir'], 'valiou_best_230_0.8782204959404711.pth')
 
     road_test = IsprsSegmentation(txt_path=param_dict['test_list'], transform=val_aug(param_dict['mean'], param_dict['std']))  # get data
     testloader = DataLoader(road_test, batch_size=param_dict['batch_size'], shuffle=False,

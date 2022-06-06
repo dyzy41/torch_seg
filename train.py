@@ -32,7 +32,7 @@ def main():
     else:
         model = frame_work
     optimizer = create_optimizer_v2(model, opt=param_dict['optim'], lr=param_dict['base_lr'], weight_decay=float(param_dict['weight_decay']), momentum=param_dict['momentum'])
-    lr_schedule = torch.optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.8)
+    lr_schedule = torch.optim.lr_scheduler.StepLR(optimizer, step_size=40, gamma=0.8)
     if param_dict['resume_ckpt']:
         resume_ckpt = param_dict['resume_ckpt']  # 断点路径
         checkpoint = torch.load(resume_ckpt)  # 加载断点
