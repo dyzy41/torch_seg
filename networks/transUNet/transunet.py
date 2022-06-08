@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 from einops import rearrange
-
-from .vit import ViT
+# from .vit import ViT
+from networks.transUNet.vit import ViT
 
 
 class EncoderBottleneck(nn.Module):
@@ -130,32 +130,26 @@ class Decoder(nn.Module):
 
 
 class TransUNet(nn.Module):
-    def __init__(self, in_channels=3, class_num=4, pretrained_path=None, out_channels=128, img_dim=512, head_num=4, mlp_dim=512, block_num=8, patch_dim=16):
+    def __init__(self, in_c=3, num_class=4, pretrained_path=None, out_channels=128, img_dim=512, head_num=4, mlp_dim=512, block_num=8, patch_dim=16):
         super().__init__()
 
-        self.encoder = Encoder(img_dim, in_channels, out_channels,
+        self.encoder = Encoder(img_dim, in_c, out_channels,
                                head_num, mlp_dim, block_num, patch_dim)
 
-        self.decoder = Decoder(out_channels, class_num)
+        self.decoder = Decoder(out_channels, num_class)
+        self.activate = nn.Softmax() if num_class > 1 else nn.Sigmoid()
 
     def forward(self, x):
         x, x1, x2, x3 = self.encoder(x)
-        x = self.decoder(x, x1, x2, x3)
-
-        return x
+        out = self.decoder(x, x1, x2, x3)
+        out = self.activate(out)
+        return out
 
 
 if __name__ == '__main__':
     import torch
-
-    transunet = TransUNet(img_dim=128,
-                          in_channels=3,
-                          out_channels=128,
-                          head_num=4,
-                          mlp_dim=512,
-                          block_num=8,
-                          patch_dim=16,
-                          class_num=1)
-
-    print(sum(p.numel() for p in transunet.parameters()))
-    print(transunet(torch.randn(1, 3, 128, 128)).shape)
+    x = torch.rand(2, 3, 512, 512)
+    transunet = TransUNet(in_c=3,
+                          num_class=2)
+    y = transunet(x)
+    print(y.shape)
