@@ -19,14 +19,11 @@
 --支持自定义对标签进行类别id处理  
 --支持多分类或二分类分割的输出类别转换  
 --网络模型目前的固定写法是networks内部的写法，方便添加网络模型结构  
---数据集的输入按照data文件夹下的写法，使用write_file_list.py编写输入图片和标签图片的对应关系  
+--数据集的输入按照data文件夹下的写法，使用write_file_list.py编写输入图片和标签图片的对应关系
+--支持基于albumentations的数据增强策略  
 
 网络结构目前包含了：
 --unet，resunet，deeplab系列，swinunet，denseaspp等等，代码网络结构很容易扩展，与另一个仓库timm_seg进行对接。  
-
-将来可以添加的：  
---基于albumentations的数据增强策略  
-
 
 训练步骤：  
 --修改config.yaml文件的root_path，这个是项目的总路径，保存文件的路径
