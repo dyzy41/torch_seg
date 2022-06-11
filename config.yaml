@@ -1,14 +1,14 @@
 batch_size: 16  # 设置批量大小
 img_size: 512  # 输入图片大小
 overlap: 64
-epoches: 300
+epoches: 4
 base_lr: 0.01  # 学习率
 optim: 'adam'
 weight_decay: 2e-5
 momentum: 0.9
 power: 0.99
 gpu_id: '0'
-save_iter: 5
+save_iter: 2
 save_mode: 'all'  #best, all
 num_workers: 4
 val_visual: True
@@ -20,10 +20,10 @@ color_table: 0,0,0,255,255,255
 tta: False
 
 resume_ckpt: 0
-model_name: 'DeepLabV3Plus'  #
+model_name: 'UNet'  #
 pretrained_model: 'download'  # 'download', '', or pretrained model path
 extra_loss: False
-model_experision: '00'
+model_experision: 'debug'
 
 
 input_bands: 3
@@ -31,7 +31,7 @@ vis_graph: False
 
 #data path
 root_path: 'E:\0Epaper\whub'
-data_name: 'data'
+data_name: 'data_debug'
 exp_name: '0529'
 
 pred_path: 'test_result'

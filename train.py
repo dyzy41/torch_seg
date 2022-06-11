@@ -3,6 +3,7 @@ from tools.utils import read_image
 import sys
 import numpy as np
 import os
+import csv
 import yimage
 from tools.metrics import get_acc_v2
 from timm.optim import create_optimizer_v2
@@ -51,7 +52,11 @@ def main():
     writer = SummaryWriter(os.path.join(param_dict['save_dir_model'], 'runs'))
 
     best_val_acc = 0.0
-    with open(os.path.join(param_dict['save_dir_model'], 'log.txt'), 'w') as ff:
+    # with open(os.path.join(param_dict['save_dir_model'], 'log.txt'), 'a') as ff:
+    with open(os.path.join(param_dict['save_dir_model'], 'log.csv'),"w", newline='') as csvf:
+        log_writer = csv.writer(csvf)
+        log_writer.writerow(["epoch", "learning_rate", "train_loss", "val_loss", "val_f1", "val_acc", "val_miou"])
+        log_data = []
         for epoch in range(start_epoch, param_dict['epoches']+1):
             model.train()
             running_loss = 0.0
@@ -86,7 +91,12 @@ def main():
                     str(val_miou)
                 )
                 print(cur_log)
-                ff.writelines(str(cur_log))
+                log_writer.writerow([epoch, cur_lr, running_loss.item() / batch_num, val_loss, val_f1,
+                    val_acc,
+                    val_miou])
+                log_data.append([epoch, cur_lr, running_loss.item() / batch_num, val_loss, val_f1,
+                    val_acc,
+                    val_miou])
                 checkpoint = {
                     "net": model.state_dict(),
                     'optimizer': optimizer.state_dict(),
@@ -99,8 +109,8 @@ def main():
                     else:
                         torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'valiou_best_{}_{}.pth'.format(epoch, val_miou)))
                     best_val_acc = val_miou
-                torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'last_model.pth'))
-
+                tools.utils.vis_curve(info=log_data, save_path=os.path.join(param_dict['save_dir_model']))
+            torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'last_model.pth'))
 
 
 def eval(valloader, model, criterion, epoch):

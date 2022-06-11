@@ -2,12 +2,12 @@ import os
 import random
 import sys
 
-src_path = r'F:\0DL_datasets\WHU_building\whub'
+src_path = r'E:\0Epaper\whub\whub'
 
-state = 'test'
+state = 'val'
 
-image_path = os.path.join(src_path, state, 'image')
-label_path = os.path.join(src_path, state, 'label')
+image_path = os.path.join(src_path, '{}'.format(state), 'image')
+label_path = os.path.join(src_path, '{}'.format(state), 'label')
 
 images = os.listdir(image_path)
 random.shuffle(images)

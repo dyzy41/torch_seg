@@ -40,6 +40,35 @@ else:
             return img
 
 
+def vis_curve(info, save_path):
+    try:
+        names = ["epoch", "learning_rate", "train_loss", "val_loss", "val_f1", "val_acc", "val_miou"]
+        X = [i for i in range(len(info))]
+        info = np.asarray(info)
+        plt.plot(X, info[:, 1], color='b', label=names[1])
+        plt.legend()  # 显示图例, 图例中内容由 label 定义
+        plt.title(names[1])
+        plt.savefig(os.path.join(save_path, '{}.png'.format(names[1])))
+        plt.clf()
+
+        plt.plot(X, info[:, 2], color='g', label=names[2])
+        plt.plot(X, info[:, 3], color='r', label=names[3])
+        plt.legend()  # 显示图例, 图例中内容由 label 定义
+        plt.title('loss')
+        plt.savefig(os.path.join(save_path, '{}.png'.format('loss')))
+        plt.clf()
+
+        plt.plot(X, info[:, 4], color='y', label=names[4])
+        plt.plot(X, info[:, 5], color='k', label=names[5])
+        plt.plot(X, info[:, 6], color='m', label=names[6])
+        plt.legend()  # 显示图例, 图例中内容由 label 定义
+        plt.title('metrics')
+        plt.savefig(os.path.join(save_path, '{}.png'.format('metrics')))
+        plt.clf()
+    except:
+        pass
+
+
 def refresh_path(path):
     if os.path.exists(path) is False:
         os.mkdir(path)
