@@ -4,7 +4,6 @@ import numpy as np
 import yaml
 import os
 import shutil
-import json
 
 
 def get_base_param(yaml_file):

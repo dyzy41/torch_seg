@@ -7,7 +7,6 @@ import numpy as np
 import torch.nn as nn
 import matplotlib.pyplot as plt
 import os
-from .parse_config_yaml import parse_yaml
 
 image_driver = 'gdal'
 if image_driver == 'gdal':
@@ -15,9 +14,7 @@ if image_driver == 'gdal':
 
 
     def read_image(path, state='img'):
-        params = parse_yaml('config.yaml')
         img = yimage.io.read_image(path)
-        img = cv2.resize(img, (params['img_size'], params['img_size']), interpolation=cv2.INTER_NEAREST)
         if state == 'gt':
             # here input your label process function
             return img

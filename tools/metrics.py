@@ -1,8 +1,6 @@
 import numpy as np
 import cv2
 import os
-from PIL import Image
-import yimage
 from tools.utils import read_image
 
 
