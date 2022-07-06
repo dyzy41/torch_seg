@@ -57,7 +57,7 @@ class DSANet(nn.Module):
         self.blockatt2 = BlockAtt(256, 4, 64)
         self.blockatt3 = BlockAtt(256, 4, 32)
         self.blockatt4 = BlockAtt(256, 2, 16)
-        self.blockatt5 = NonLocalBlock(256)
+        self.blockatt5 = BlockAtt(256, 2, 8)
 
         self.Dup0 = DUpsampling(256, 2, 256)
         self.Dup1 = DUpsampling(256, 2, 256)
@@ -108,7 +108,7 @@ class DSANet(nn.Module):
 
 
 if __name__ == '__main__':
-    x = torch.rand(2, 3, 256, 256)
+    x = torch.rand(2, 3, 225, 225)
     model = DSANet(pretrained_path='download')
 
     y = model(x)
