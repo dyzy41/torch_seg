@@ -8,3 +8,4 @@ from networks.coarse2fine.unet_sq import UNet_SQ
 from networks.mfnet.mfnet_v2 import MFNet50
 from networks.twinnet.twinnet import TwinNet50
 from networks.mfnet.mfnet_v3 import MFNet50_v3
+from networks.non_local.DSANet import DSANet

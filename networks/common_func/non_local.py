@@ -35,7 +35,7 @@ class NonLocalBlock(nn.Module):
         # [N, C, H , W]
         att_map = self.conv_mask(mul_theta_phi_g)
         out = att_map + x
-        return att_map
+        return out
 
 
 if __name__ == '__main__':

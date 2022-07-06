@@ -1,4 +1,4 @@
-batch_size: 16  # 设置批量大小
+batch_size: 2  # 设置批量大小
 img_size: 512  # 输入图片大小
 overlap: 64
 epoches: 4
@@ -20,10 +20,10 @@ color_table: 0,0,0,255,255,255
 tta: False
 
 resume_ckpt: 0
-model_name: 'UNet'  #
+model_name: 'DSANet'  #
 pretrained_model: 'download'  # 'download', '', or pretrained model path
 extra_loss: False
-model_experision: 'debug'
+model_experision: 'data'
 
 
 input_bands: 3
