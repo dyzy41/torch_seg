@@ -56,22 +56,16 @@ class DSANet(nn.Module):
 
         self.blockatt2 = BlockAtt(256, 4, 64)
         self.blockatt3 = BlockAtt(256, 4, 32)
-        self.blockatt4 = BlockAtt(256, 2, 16)
-        self.blockatt5 = BlockAtt(256, 2, 8)
+        # self.blockatt4 = BlockAtt(256, 2, 16)
+        # self.blockatt5 = BlockAtt(256, 2, 8)
+        self.blockatt4 = NonLocalBlock(256)
+        self.blockatt5 = NonLocalBlock(256)
 
         self.Dup0 = DUpsampling(256, 2, 256)
         self.Dup1 = DUpsampling(256, 2, 256)
         self.Dup2 = DUpsampling(256, 2, 256)
 
-
-        self.c11 = nn.Conv2d(in_channels=512, out_channels=512, kernel_size=1, stride=1, padding=0)
-        self.c33 = nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=1)
-        self.c33_block = nn.Sequential(self.c33,
-                                       nn.BatchNorm2d(512),
-                                       nn.ReLU())
-        self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
-
         self.outc = OutConv(256, num_class)
         self.activate = nn.Softmax() if num_class > 1 else nn.Sigmoid()
         self.att_avgp = nn.AvgPool2d((self.sub_factor, self.sub_factor))

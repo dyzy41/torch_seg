@@ -25,8 +25,11 @@ class BlockAtt(nn.Module):
             nn.ReLU())
         self.nlb_sub = NonLocalBlock(self.channel)
         self.att_avgp = nn.AvgPool2d((self.size // self.sub_factor, self.size // self.sub_factor))
-        self.conv_block = nn.Conv2d(in_channels=self.channel, out_channels=self.channel, kernel_size=1, stride=1,
-                                    padding=0)
+        self.conv_block = nn.Sequential(nn.Conv2d(in_channels=self.channel, out_channels=self.channel, kernel_size=1, stride=1,
+                                    padding=0),
+                                        nn.BatchNorm2d(self.channel),
+                                        nn.ReLU()
+                                        )
         self.nlb_block = NonLocalBlock(self.channel)
 
     def forward(self, x):
