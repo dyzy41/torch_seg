@@ -3,10 +3,12 @@ from albumentations.pytorch import ToTensorV2
 
 def train_aug(mean, std):
     transform = [
-        albu.HorizontalFlip(p=0.5),
+        albu.Flip(p=1),
         albu.ShiftScaleRotate(scale_limit=0.5, rotate_limit=0, shift_limit=0.1, p=1, border_mode=0),
         albu.IAAAdditiveGaussianNoise(p=0.2),
         albu.IAAPerspective(p=0.5),
+        albu.RandomGridShuffle(),
+        albu.Cutout(max_h_size=32, max_w_size=32),
         albu.OneOf(
             [
                 albu.CLAHE(p=1),

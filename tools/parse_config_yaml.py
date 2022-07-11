@@ -11,16 +11,26 @@ def get_base_param(yaml_file):
     params = yaml.load(f, Loader=yaml.FullLoader)
     return params
 
+def uint82bin(n, count=8):
+    """returns the binary of integer n, count refers to amount of bits"""
+    return ''.join([str((n >> y) & 1) for y in range(count-1, -1, -1)])
 
-def gen_color_map(num):
-    random.seed(24)
+def gen_color_map(N):
+    # voc color map
     color_map = []
-    while len(color_map) < num:
-        r, g, b = np.random.random_integers(0, 255, 3)
-        if (r, g, b) not in color_map:
-            color_map.append((r, g, b))
+    for i in range(N):
+        r = 0
+        g = 0
+        b = 0
+        id = i
+        for j in range(7):
+            str_id = uint82bin(id)
+            r = r ^ ( np.uint8(str_id[-1]) << (7-j))
+            g = g ^ ( np.uint8(str_id[-2]) << (7-j))
+            b = b ^ ( np.uint8(str_id[-3]) << (7-j))
+            id = id >> 3
+        color_map.append((r, g, b))
     return color_map
-
 
 def update_param(param_dict):
     cur_path = os.getcwd()
@@ -38,9 +48,9 @@ def update_param(param_dict):
         os.mkdir(param_dict['save_dir'])
     if os.path.exists(param_dict['save_dir_model']) is False:
         os.mkdir(param_dict['save_dir_model'])
-    param_dict['train_list'] = os.path.join(cur_path, '{}/train_list.txt'.format(param_dict['data_name']))
-    param_dict['val_list'] = os.path.join(cur_path, '{}/val_list.txt'.format(param_dict['data_name']))
-    param_dict['test_list'] = os.path.join(cur_path, '{}/test_list.txt'.format(param_dict['data_name']))
+    param_dict['train_list'] = os.path.join(cur_path, 'dataset/{}/train_list.txt'.format(param_dict['data_name']))
+    param_dict['val_list'] = os.path.join(cur_path, 'dataset/{}/val_list.txt'.format(param_dict['data_name']))
+    param_dict['test_list'] = os.path.join(cur_path, 'dataset/{}/test_list.txt'.format(param_dict['data_name']))
     param_dict['model_dir'] = os.path.join(param_dict['save_dir_model'], './pth_{}/'.format(param_dict['model_name']))
     param_dict['pred_path'] = os.path.join(param_dict['save_dir_model'], param_dict['pred_path'])
     param_dict['pretrained_model'] = os.path.join(param_dict['pretrained_model'])
@@ -49,6 +59,10 @@ def update_param(param_dict):
     else:
         param_dict['color_table'] = list(np.asarray(param_dict['color_table'].split(',')).astype(np.int).reshape(-1, 3))
         param_dict['color_table'] = [tuple(i) for i in param_dict['color_table']]
+    if param_dict['class_weights'] != "None":
+        param_dict['class_weights'] = list(np.asarray(param_dict['class_weights'].split(',')).astype(np.float))
+    else:
+        param_dict['class_weights'] = None
     return param_dict
 
 

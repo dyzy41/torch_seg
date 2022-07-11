@@ -15,7 +15,7 @@ import tools
 import torch
 from tensorboardX import SummaryWriter
 from networks.get_model import get_net
-from tools.losses import get_loss
+from tools import loss_func
 from tools.parse_config_yaml import parse_yaml
 import torch.onnx
 
@@ -48,7 +48,7 @@ def main():
         print('load the model %s' % find_new_file(param_dict['model_dir']))
     model.to(device)
 
-    criterion = get_loss(param_dict['loss_type'])  # define loss
+    criterion = getattr(loss_func, param_dict['loss_type'])(torch.FloatTensor(param_dict['class_weights']).to(device))
     writer = SummaryWriter(os.path.join(param_dict['save_dir_model'], 'runs'))
 
     best_val_acc = 0.0
@@ -64,12 +64,11 @@ def main():
             for i, data in tqdm.tqdm(enumerate(trainloader)):  # get data
                 images, labels = data['image'], data['gt']
                 i += images.size()[0]
-                labels = labels.long()
                 images = images.to(device)
                 labels = labels.to(device)
                 optimizer.zero_grad()
                 outputs = model(images)
-                losses = criterion(outputs, labels)  # calculate loss
+                losses = criterion(outputs, labels, )  # calculate loss
                 losses.backward()  #
                 optimizer.step()
                 running_loss += losses
