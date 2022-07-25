@@ -3,7 +3,7 @@ import sys
 import os
 from tools.utils import read_image
 import yimage
-from tools.metrics import get_acc_v2
+from tools.metrics import GetMetrics
 import numpy as np
 import torchvision.transforms as standard_transforms
 from torch.utils.data import DataLoader
@@ -60,7 +60,7 @@ def test(testloader, model):
                     os.path.join(param_dict['pred_path'], cur_name),
                     pred_sub,
                     color_table=param_dict['color_table'])
-        precision, recall, f1ccore, OA, IoU, mIOU = get_acc_v2(
+        OverallAccuracy, MeanF1, MeanIoU, Kappa, ClassIoU, ClassF1, ClassRecall, ClassPrecision = GetMetrics(
             label_all, predict_all,
             param_dict['num_class'] + 1 if param_dict['num_class'] == 1 else param_dict['num_class'],
             param_dict['save_dir_model'])

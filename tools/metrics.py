@@ -156,6 +156,108 @@ def get_acc_v2(label_all, predict_all, classNum=2, save_path='./'):
     return precision, recall, f1ccore, OA, IoU, mIOU
 
 
+def cal_confusion(gt_label, pre_label, n_class):
+    mask = (gt_label >= 0) & (gt_label < n_class)
+    confusion = np.bincount(n_class * gt_label[mask].astype(int) + pre_label[mask],
+                            minlength=n_class ** 2).reshape(n_class, n_class)
+    return confusion
+
+
+def GetMetrics(gt_label, pre_label, n_class, save_path='./'):
+    gt_label = gt_label.flatten()
+    pre_label = pre_label.flatten()
+    confu_mat_total = cal_confusion(gt_label, pre_label, n_class)
+
+    # confu_mat_total = np.zeros((n_class, n_class))
+    # for i in range(gt_label.shape[0]):
+    #     confu_mat_total+=cal_confusion(gt_label[i].flatten(), pre_label[i].flatten(), n_class)
+
+    class_num = confu_mat_total.shape[0]
+    confu_mat = confu_mat_total.astype(np.float32) + 0.0001
+    col_sum = np.sum(confu_mat, axis=1)  # 按行求和
+    raw_sum = np.sum(confu_mat, axis=0)  # 每一列的数量
+
+    '''计算各类面积比，以求OA值'''
+    OverallAccuracy = 0
+    for i in range(class_num):
+        OverallAccuracy = OverallAccuracy + confu_mat[i, i]
+    OverallAccuracy = OverallAccuracy / confu_mat.sum()
+
+    '''Kappa'''
+    pe_fz = 0
+    for i in range(class_num):
+        pe_fz += col_sum[i] * raw_sum[i]
+    pe = pe_fz / (np.sum(confu_mat) * np.sum(confu_mat))
+    Kappa = (OverallAccuracy - pe) / (1 - pe)
+
+    # 将混淆矩阵写入excel中
+    TP = []  # 识别中每类分类正确的个数
+
+    for i in range(class_num):
+        TP.append(confu_mat[i, i])
+
+    # 计算f1-score
+    TP = np.array(TP)
+    FN = col_sum - TP
+    FP = raw_sum - TP
+
+    # 计算并写出precision，recall, f1-score，f1-m以及mIOU
+
+    ClassF1 = []
+    ClassIoU = []
+    for i in range(class_num):
+        # 写出f1-score
+        f1 = TP[i] * 2 / (TP[i] * 2 + FP[i] + FN[i])
+        ClassF1.append(f1)
+        iou = TP[i] / (TP[i] + FP[i] + FN[i])
+        ClassIoU.append(iou)
+
+    ClassF1 = np.array(ClassF1)
+    ClassIoU = np.array(ClassIoU)
+    MeanF1 = np.mean(ClassF1)
+    MeanIoU = np.mean(ClassIoU)
+    ClassRecall = []
+    ClassPrecision = []
+    if save_path is not None:
+        with open('{}/accuracy.txt'.format(save_path), 'w') as f:
+            f.write('OA:\t%.4f\n' % (OverallAccuracy * 100))
+            f.write('kappa:\t%.4f\n' % (Kappa * 100))
+            f.write('mf1-score:\t%.4f\n' % (np.mean(ClassF1) * 100))
+            f.write('mIou:\t%.4f\n' % (np.mean(ClassIoU) * 100))
+
+            # 写出precision
+            f.write('precision:\n')
+            for i in range(class_num):
+                f.write('%.4f\t' % (float(TP[i]/raw_sum[i])*100))
+                ClassPrecision.append(float(TP[i] / raw_sum[i]))
+            print(ClassPrecision)
+            f.write('\n')
+
+            # 写出recall
+            f.write('recall:\n')
+            for i in range(class_num):
+                f.write('%.4f\t' % (float(TP[i] / col_sum[i])*100))
+                ClassRecall.append(float(TP[i] / col_sum[i]))
+            print(ClassRecall)
+            f.write('\n')
+
+            # 写出f1-score
+            f.write('f1-score:\n')
+            for i in range(class_num):
+                f.write('%.4f\t' % (float(ClassF1[i]) * 100))
+            print(ClassF1)
+            f.write('\n')
+
+            # 写出 IOU
+            f.write('Iou:\n')
+            for i in range(class_num):
+                f.write('%.4f\t' % (float(ClassIoU[i]) * 100))
+            print(ClassIoU)
+            f.write('\n')
+    ClassRecall = np.asarray(ClassRecall)
+    ClassPrecision = np.asarray(ClassPrecision)
+    return OverallAccuracy, MeanF1, MeanIoU, Kappa, ClassIoU, ClassF1, ClassRecall, ClassPrecision
+
 
 def get_acc_info(PredictPath, LabelPath, classNum=2, save_path='./'):
     #  获取类别颜色字典

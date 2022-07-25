@@ -5,7 +5,7 @@ import numpy as np
 import os
 import csv
 import yimage
-from tools.metrics import get_acc_v2
+from tools.metrics import GetMetrics
 from timm.optim import create_optimizer_v2
 from torch.utils.data import DataLoader
 import tqdm
@@ -79,35 +79,35 @@ def main():
             writer.add_scalar('train_loss', running_loss / batch_num, epoch)
             lr_schedule.step()
             if epoch % param_dict['save_iter'] == 0:
-                val_miou, val_acc, val_f1, val_loss = eval(valloader, model, criterion, epoch)
-                writer.add_scalar('val_miou', val_miou, epoch)
-                writer.add_scalar('val_acc', val_acc, epoch)
-                writer.add_scalar('val_f1', val_f1, epoch)
+                OverallAccuracy, MeanF1, MeanIoU, Kappa, ClassIoU, ClassF1, ClassRecall, ClassPrecision, val_loss = eval(valloader, model, criterion, epoch)
+                writer.add_scalar('val_miou', MeanIoU, epoch)
+                writer.add_scalar('val_acc', OverallAccuracy, epoch)
+                writer.add_scalar('val_f1', MeanF1, epoch)
                 writer.add_scalar('val_loss', val_loss, epoch)
                 cur_log = 'epoch:{}, learning_rate:{}, train_loss:{}, val_loss:{}, val_f1:{}, val_acc:{}, val_miou:{}\n'.format(
-                    str(epoch), str(cur_lr), str(running_loss.item() / batch_num), str(val_loss), str(val_f1),
-                    str(val_acc),
-                    str(val_miou)
+                    str(epoch), str(cur_lr), str(running_loss.item() / batch_num), str(val_loss), str(MeanF1),
+                    str(OverallAccuracy),
+                    str(MeanIoU)
                 )
                 print(cur_log)
-                log_writer.writerow([epoch, cur_lr, running_loss.item() / batch_num, val_loss, val_f1,
-                    val_acc,
-                    val_miou])
-                log_data.append([epoch, cur_lr, running_loss.item() / batch_num, val_loss, val_f1,
-                    val_acc,
-                    val_miou])
+                log_writer.writerow([epoch, cur_lr, running_loss.item() / batch_num, val_loss, MeanF1,
+                    OverallAccuracy,
+                    MeanIoU])
+                log_data.append([epoch, cur_lr, running_loss.item() / batch_num, val_loss, MeanF1,
+                    OverallAccuracy,
+                    MeanIoU])
                 checkpoint = {
                     "net": model.state_dict(),
                     'optimizer': optimizer.state_dict(),
                     'lr_schedule': lr_schedule.state_dict(),
                     "epoch": epoch
                 }
-                if val_miou > best_val_acc:
+                if MeanIoU > best_val_acc:
                     if param_dict['save_mode'] == 'best':
                         torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'valiou_best.pth'))
                     else:
-                        torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'valiou_best_{}_{}.pth'.format(epoch, val_miou)))
-                    best_val_acc = val_miou
+                        torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'valiou_best_{}_{}.pth'.format(epoch, MeanIoU)))
+                    best_val_acc = MeanIoU
                 tools.utils.vis_curve(info=log_data, save_path=os.path.join(param_dict['save_dir_model']))
             torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'last_model.pth'))
 
@@ -153,12 +153,12 @@ def eval(valloader, model, criterion, epoch):
                         os.path.join(param_dict['save_dir_model'], 'val_visual', str(epoch), 'slice', cur_name),
                         pred_sub,
                         color_table=param_dict['color_table'])
-        precision, recall, f1ccore, OA, IoU, mIOU = get_acc_v2(
+        OverallAccuracy, MeanF1, MeanIoU, Kappa, ClassIoU, ClassF1, ClassRecall, ClassPrecision = GetMetrics(
             label_all, predict_all,
             param_dict['num_class'] + 1 if param_dict['num_class'] == 1 else param_dict['num_class'],
             os.path.join(param_dict['save_dir_model'], 'val_visual', str(epoch)))
         val_loss = val_loss / batch_num
-    return IoU[1], OA, f1ccore[1], val_loss
+    return OverallAccuracy, MeanF1, MeanIoU, Kappa, ClassIoU, ClassF1, ClassRecall, ClassPrecision, val_loss
 
 
 def find_new_file(dir):
