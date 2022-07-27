@@ -2,9 +2,9 @@ import os
 import random
 import sys
 
-src_path = r'E:\torch_seg\dataset\voc'
+src_path = '/home/dsj/torch_seg_debug/dataset/voc'
 
-state = 'train'
+state = 'val'
 
 
 

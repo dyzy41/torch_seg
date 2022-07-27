@@ -48,7 +48,8 @@ def main():
         print('load the model %s' % find_new_file(param_dict['model_dir']))
     model.to(device)
 
-    criterion = getattr(loss_func, param_dict['loss_type'])(torch.FloatTensor(param_dict['class_weights']).to(device))
+    # criterion = getattr(loss_func, param_dict['loss_type'])(torch.FloatTensor(param_dict['class_weights']).to(device))
+    criterion = getattr(loss_func, param_dict['loss_type'])()
     writer = SummaryWriter(os.path.join(param_dict['save_dir_model'], 'runs'))
 
     best_val_acc = 0.0
@@ -68,7 +69,7 @@ def main():
                 labels = labels.to(device)
                 optimizer.zero_grad()
                 outputs = model(images)
-                losses = criterion(outputs, labels, )  # calculate loss
+                losses = criterion(outputs, labels)  # calculate loss
                 losses.backward()  #
                 optimizer.step()
                 running_loss += losses

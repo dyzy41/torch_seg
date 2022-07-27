@@ -1,8 +1,8 @@
-batch_size: 8  # 设置批量大小
-img_size: 512  # 输入图片大小
+batch_size: 48  # 设置批量大小
+img_size: 320  # 输入图片大小
 overlap: 64
-epoches: 200
-base_lr: 0.01  # 学习率
+epoches: 800
+base_lr: 0.003  # 学习率
 optim: 'adam'
 weight_decay: 2e-5
 momentum: 0.9
@@ -10,11 +10,11 @@ power: 0.99
 gpu_id: '0'
 save_iter: 10
 save_mode: 'all'  #best, all
-num_workers: 2
+num_workers: 4
 val_visual: True
 image_driver: 'gdal'   #pillow, gdal
-loss_type: 'CrossEntropyLoss2d'
-num_class: 21  # some parameters
+loss_type: 'FocalLoss'
+num_class: 9  # some parameters
 thread: 0.5
 color_table: 0
 class_weights: 78.08040418536484, 0.5634292146818277, 0.253603248059279, 0.6804753364748943, 0.4585480878249174, 0.5731837347615351, 1.389097455355706, 1.166330528062846, 2.0011722448147986, 0.9148914299181471, 0.8221193805331837, 1.182792655716964, 1.5196898775005767, 0.8083318624552116, 0.8759743153250917, 4.307584176552979, 0.4973709153588842, 0.6542078784925602, 1.311876615870666, 1.280313891886519, 0.658602964988575
@@ -24,15 +24,15 @@ resume_ckpt: 0
 model_name: 'DeepLabV3Plus'  #
 pretrained_model: 'download'  # 'download', '', or pretrained model path
 extra_loss: False
-model_experision: 'test'
+model_experision: 'FocalLoss'
 
 
 input_bands: 3
 vis_graph: False
 
 #data path
-root_path: 'E:\0Epaper\whub'
-data_name: 'voc'
-exp_name: '0712'
+root_path: '/home/dsj/torch_seg_debug'
+data_name: 'city'
+exp_name: '0727'
 
 pred_path: 'test_result'

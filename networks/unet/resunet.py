@@ -110,12 +110,12 @@ class Res_UNet_50(nn.Module):
         return out
 
 class Res_UNet_34(nn.Module):
-    def __init__(self, in_c, num_class, bilinear=True):
+    def __init__(self, in_c, num_class, pretrained_path=None, bilinear=True):
         super(Res_UNet_34, self).__init__()
         self.in_c = 3
         self.num_class = num_class
         self.bilinear = bilinear
-        self.backbone = get_model('resnet34')
+        self.backbone = get_model('resnet34', checkpoint_path=pretrained_path)
 
         self.inc = DoubleConv(in_c, 64)
         self.down1 = Down(64, 128)

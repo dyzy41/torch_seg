@@ -9,3 +9,5 @@ from networks.mfnet.mfnet_v2 import MFNet50
 from networks.twinnet.twinnet import TwinNet50
 from networks.mfnet.mfnet_v3 import MFNet50_v3
 from networks.non_local.DSANet import DSANet
+from networks.a2fpn.a2fpn import A2FPN
+from networks.bisenet.bisenet import BiSeNet

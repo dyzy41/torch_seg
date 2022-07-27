@@ -203,21 +203,19 @@ def GetMetrics(gt_label, pre_label, n_class, save_path='./'):
 
     # 计算并写出precision，recall, f1-score，f1-m以及mIOU
 
-    ClassF1 = []
-    ClassIoU = []
+    ClassF1 = np.zeros(class_num)
+    ClassIoU = np.zeros(class_num)
     for i in range(class_num):
         # 写出f1-score
         f1 = TP[i] * 2 / (TP[i] * 2 + FP[i] + FN[i])
-        ClassF1.append(f1)
+        ClassF1[i] = f1
         iou = TP[i] / (TP[i] + FP[i] + FN[i])
-        ClassIoU.append(iou)
+        ClassIoU[i] = iou
 
-    ClassF1 = np.array(ClassF1)
-    ClassIoU = np.array(ClassIoU)
     MeanF1 = np.mean(ClassF1)
     MeanIoU = np.mean(ClassIoU)
-    ClassRecall = []
-    ClassPrecision = []
+    ClassRecall = np.zeros(class_num)
+    ClassPrecision = np.zeros(class_num)
     if save_path is not None:
         with open('{}/accuracy.txt'.format(save_path), 'w') as f:
             f.write('OA:\t%.4f\n' % (OverallAccuracy * 100))
@@ -225,11 +223,17 @@ def GetMetrics(gt_label, pre_label, n_class, save_path='./'):
             f.write('mf1-score:\t%.4f\n' % (np.mean(ClassF1) * 100))
             f.write('mIou:\t%.4f\n' % (np.mean(ClassIoU) * 100))
 
+            print('OA:\t%.4f' % (OverallAccuracy * 100))
+            print('kappa:\t%.4f' % (Kappa * 100))
+            print('mf1-score:\t%.4f' % (np.mean(ClassF1) * 100))
+            print('mIou:\t%.4f' % (np.mean(ClassIoU) * 100))
+
             # 写出precision
             f.write('precision:\n')
             for i in range(class_num):
                 f.write('%.4f\t' % (float(TP[i]/raw_sum[i])*100))
-                ClassPrecision.append(float(TP[i] / raw_sum[i]))
+                ClassPrecision[i] = float(TP[i] / raw_sum[i])
+            print('precision:')
             print(ClassPrecision)
             f.write('\n')
 
@@ -237,7 +241,8 @@ def GetMetrics(gt_label, pre_label, n_class, save_path='./'):
             f.write('recall:\n')
             for i in range(class_num):
                 f.write('%.4f\t' % (float(TP[i] / col_sum[i])*100))
-                ClassRecall.append(float(TP[i] / col_sum[i]))
+                ClassRecall[i] = float(TP[i] / col_sum[i])
+            print('recall:')
             print(ClassRecall)
             f.write('\n')
 
@@ -245,6 +250,7 @@ def GetMetrics(gt_label, pre_label, n_class, save_path='./'):
             f.write('f1-score:\n')
             for i in range(class_num):
                 f.write('%.4f\t' % (float(ClassF1[i]) * 100))
+            print('f1-score:')
             print(ClassF1)
             f.write('\n')
 
@@ -252,6 +258,7 @@ def GetMetrics(gt_label, pre_label, n_class, save_path='./'):
             f.write('Iou:\n')
             for i in range(class_num):
                 f.write('%.4f\t' % (float(ClassIoU[i]) * 100))
+            print('Iou:')
             print(ClassIoU)
             f.write('\n')
     ClassRecall = np.asarray(ClassRecall)

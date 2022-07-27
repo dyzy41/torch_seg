@@ -1,9 +1,13 @@
-import os
-import yimage
+import cv2
 import numpy as np
+from PIL import Image
+import yimage
+import os
+
+p = r'E:\dataset\smallcity\masks'
+imgs = os.listdir(p)
+for i in range(len(imgs)):
+    img = yimage.io.read_image(os.path.join(p, imgs[i]))
+    print(set(img.flatten()))
 
 
-p = r'E:\0Epaper\whub\whub\train\label\3.tif'
-
-img = yimage.io.read_image(p)
-print('ok')

@@ -15,6 +15,7 @@ if image_driver == 'gdal':
 
     def read_image(path, state='img'):
         img = yimage.io.read_image(path)
+        img = cv2.resize(img, (320, 320), cv2.INTER_NEAREST)
         if state == 'gt':
             # here input your label process function
             return img
