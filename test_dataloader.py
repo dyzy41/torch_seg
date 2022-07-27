@@ -11,7 +11,7 @@ import tqdm
 import ttach as tta
 from collections import OrderedDict
 import tools.transform as tr
-from tools.dataloader import IsprsSegmentation
+from tools.dataloader import ReadSegData
 import tools
 import torch
 from networks.get_model import get_net
@@ -96,7 +96,7 @@ if __name__ == '__main__':
 
     model_path = os.path.join(param_dict['model_dir'], 'valiou_best_230_0.8782204959404711.pth')
 
-    road_test = IsprsSegmentation(txt_path=param_dict['test_list'], transform=val_aug(param_dict['mean'], param_dict['std']))  # get data
+    road_test = ReadSegData(txt_path=param_dict['test_list'], transform=val_aug(param_dict['mean'], param_dict['std']))  # get data
     testloader = DataLoader(road_test, batch_size=param_dict['batch_size'], shuffle=False,
                            num_workers=param_dict['num_workers'], drop_last=False)  # define traindata
 

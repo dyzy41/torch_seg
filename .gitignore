@@ -2,3 +2,4 @@
 *.c
 /__pycache__/
 /.idea/
+/dataset/

@@ -10,7 +10,7 @@ from timm.optim import create_optimizer_v2
 from torch.utils.data import DataLoader
 import tqdm
 from tools.data_aug import train_aug, val_aug
-from tools.dataloader import IsprsSegmentation
+from tools.dataloader import ReadSegData
 import tools
 import torch
 from tensorboardX import SummaryWriter
@@ -21,10 +21,10 @@ import torch.onnx
 
 
 def main():
-    train_dataset = IsprsSegmentation(txt_path=param_dict['train_list'], transform=train_aug(param_dict['mean'], param_dict['std']))  # get data
+    train_dataset = ReadSegData(txt_path=param_dict['train_list'], transform=train_aug(param_dict['mean'], param_dict['std']))  # get data
     trainloader = DataLoader(train_dataset, batch_size=param_dict['batch_size'], shuffle=True,
                              num_workers=param_dict['num_workers'], drop_last=True)  # define traindata
-    val_dataset = IsprsSegmentation(txt_path=param_dict['val_list'], transform=val_aug(param_dict['mean'], param_dict['std']))  # get data
+    val_dataset = ReadSegData(txt_path=param_dict['val_list'], transform=val_aug(param_dict['mean'], param_dict['std']))  # get data
     valloader = DataLoader(val_dataset, batch_size=param_dict['batch_size'], shuffle=False,
                            num_workers=param_dict['num_workers'])  # define traindata
     start_epoch = 0

@@ -6,7 +6,7 @@ from torch.utils.data import Dataset
 from tools import utils
 
 
-class IsprsSegmentation(Dataset):
+class ReadSegData(Dataset):
     """
     PascalVoc dataset
     """
