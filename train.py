@@ -15,7 +15,7 @@ import tools
 import torch
 from tensorboardX import SummaryWriter
 from networks.get_model import get_net
-from tools import loss_func
+from tools import loss_func, loss_func_cls1
 from tools.parse_config_yaml import parse_yaml
 import torch.onnx
 
@@ -48,8 +48,10 @@ def main():
         print('load the model %s' % find_new_file(param_dict['model_dir']))
     model.to(device)
 
-    # criterion = getattr(loss_func, param_dict['loss_type'])(torch.FloatTensor(param_dict['class_weights']).to(device))
-    criterion = getattr(loss_func, param_dict['loss_type'])()
+    if param_dict['num_class']>1:
+        criterion = getattr(loss_func, param_dict['loss_type'])()
+    else:
+        criterion = getattr(loss_func_cls1, param_dict['loss_type'])()
     writer = SummaryWriter(os.path.join(param_dict['save_dir_model'], 'runs'))
 
     best_val_acc = 0.0
