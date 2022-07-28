@@ -30,3 +30,4 @@ plt.xlabel("epoch") #xlabel、ylabel：分别设置X、Y轴的标题文字。
 plt.ylabel("num")
 plt.title("{} curve".format(target)) # title：设置子图的标题。
 plt.savefig('target.png',dpi=120,bbox_inches='tight')
+print('finshed')

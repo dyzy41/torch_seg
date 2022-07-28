@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 import os
-from tools.utils import read_image
+import yimage
 
 
 
@@ -266,103 +266,84 @@ def GetMetrics(gt_label, pre_label, n_class, save_path='./'):
     return OverallAccuracy, MeanF1, MeanIoU, Kappa, ClassIoU, ClassF1, ClassRecall, ClassPrecision
 
 
-def get_acc_info(PredictPath, LabelPath, classNum=2, save_path='./'):
-    #  获取类别颜色字典
-    colorDict_BGR, colorDict_GRAY = color_dict(LabelPath, classNum)
+def CM2Metric(confu_mat_total):
+    class_num = confu_mat_total.shape[0]
+    confu_mat = confu_mat_total.astype(np.float32) + 0.0001
+    col_sum = np.sum(confu_mat, axis=1)  # 按行求和
+    raw_sum = np.sum(confu_mat, axis=0)  # 每一列的数量
 
-    #  获取文件夹内所有图像
-    labelList = os.listdir(LabelPath)
-    PredictList = os.listdir(PredictPath)
+    '''计算各类面积比，以求OA值'''
+    OverallAccuracy = 0
+    for i in range(class_num):
+        OverallAccuracy = OverallAccuracy + confu_mat[i, i]
+    OverallAccuracy = OverallAccuracy / confu_mat.sum()
 
-    #  读取第一个图像，后面要用到它的shape
-    Label0 = cv2.imread(PredictPath + "//" + PredictList[0], 0)
+    '''Kappa'''
+    pe_fz = 0
+    for i in range(class_num):
+        pe_fz += col_sum[i] * raw_sum[i]
+    pe = pe_fz / (np.sum(confu_mat) * np.sum(confu_mat))
+    Kappa = (OverallAccuracy - pe) / (1 - pe)
 
-    #  图像数目
-    label_num = len(PredictList)
+    # 将混淆矩阵写入excel中
+    TP = []  # 识别中每类分类正确的个数
 
-    #  把所有图像放在一个数组里
-    label_all = np.zeros((label_num,) + Label0.shape, np.uint8)
-    predict_all = np.zeros((label_num,) + Label0.shape, np.uint8)
-    for i in range(label_num):
-        Label = read_image(LabelPath + "//" + PredictList[i], 'gt')
-        label_all[i] = Label
-        Predict = read_image(PredictPath + "//" + PredictList[i])
-        predict_all[i] = Predict
+    for i in range(class_num):
+        TP.append(confu_mat[i, i])
 
-    #  把颜色映射为0,1,2,3...
-    for i in range(colorDict_GRAY.shape[0]):
-        label_all[label_all == colorDict_GRAY[i][0]] = i
-        predict_all[predict_all == colorDict_GRAY[i][0]] = i
+    # 计算f1-score
+    TP = np.array(TP)
+    FN = col_sum - TP
+    FP = raw_sum - TP
 
-    #  拉直成一维
-    label_all = label_all.flatten()
-    predict_all = predict_all.flatten()
+    # 计算并写出precision，recall, f1-score，f1-m以及mIOU
 
-    #  计算混淆矩阵及各精度参数
-    confusionMatrix = ConfusionMatrix(classNum, predict_all, label_all)
-    precision = Precision(confusionMatrix)
-    recall = Recall(confusionMatrix)
-    OA = OverallAccuracy(confusionMatrix)
-    IoU = IntersectionOverUnion(confusionMatrix)
-    FWIOU = Frequency_Weighted_Intersection_over_Union(confusionMatrix)
-    mIOU = MeanIntersectionOverUnion(confusionMatrix)
-    f1ccore = F1Score(confusionMatrix)
+    ClassF1 = np.zeros(class_num)
+    ClassIoU = np.zeros(class_num)
+    for i in range(class_num):
+        # 写出f1-score
+        f1 = TP[i] * 2 / (TP[i] * 2 + FP[i] + FN[i])
+        ClassF1[i] = f1
+        iou = TP[i] / (TP[i] + FP[i] + FN[i])
+        ClassIoU[i] = iou
 
-    for i in range(colorDict_BGR.shape[0]):
-        #  输出类别颜色,需要安装webcolors,直接pip install webcolors
-        try:
-            import webcolors
+    MeanF1 = np.mean(ClassF1)
+    MeanIoU = np.mean(ClassIoU)
+    ClassRecall = np.zeros(class_num)
+    ClassPrecision = np.zeros(class_num)
 
-            rgb = colorDict_BGR[i]
-            rgb[0], rgb[2] = rgb[2], rgb[0]
-            print(webcolors.rgb_to_name(rgb), end="  ")
-        #  不安装的话,输出灰度值
-        except:
-            print(colorDict_GRAY[i][0], end="  ")
-    print("")
-    print("confusion_matrix:")
-    print(confusionMatrix)
-    print("precision:")
-    print(precision)
-    print("recall:")
-    print(recall)
-    print("F1-Score:")
-    print(f1ccore)
-    print("overall_accuracy:")
-    print(OA)
-    print("IoU:")
-    print(IoU)
-    print("mIoU:")
-    print(mIOU)
-    print("FWIoU:")
-    print(FWIOU)
-    with open('{}/accuracy.txt'.format(save_path), 'w') as ff:
-        ff.writelines("confusion_matrix:\n")
-        ff.writelines(str(confusionMatrix)+"\n")
-        ff.writelines("precision:\n")
-        ff.writelines(str(precision)+"\n")
-        ff.writelines("recall:\n")
-        ff.writelines(str(recall)+"\n")
-        ff.writelines("F1-Score:\n")
-        ff.writelines(str(f1ccore)+"\n")
-        ff.writelines("overall_accuracy:\n")
-        ff.writelines(str(OA)+"\n")
-        ff.writelines("IoU:\n")
-        ff.writelines(str(IoU)+"\n")
-        ff.writelines("mIoU:\n")
-        ff.writelines(str(mIOU)+"\n")
-        ff.writelines("FWIoU:\n")
-        ff.writelines(str(FWIOU)+"\n")
-    return precision, recall, f1ccore, OA, IoU, mIOU
+    for i in range(class_num):
+        ClassPrecision[i] = float(TP[i] / raw_sum[i])
+    for i in range(class_num):
+        ClassRecall[i] = float(TP[i] / col_sum[i])
+    ClassRecall = np.asarray(ClassRecall)
+    ClassPrecision = np.asarray(ClassPrecision)
+    KEEP = 8
+    ClassIoU = np.around(ClassIoU, KEEP)
+    ClassF1 = np.around(ClassF1, KEEP)
+    ClassRecall = np.around(ClassRecall, KEEP)
+    ClassPrecision = np.around(ClassPrecision, KEEP)
+    np.set_printoptions(suppress=True)
+    return OverallAccuracy, MeanF1, MeanIoU, Kappa, ClassIoU, ClassF1, ClassRecall, ClassPrecision
+
+
+def dir_metric(pred_path, gt_path, pred_suffix, gt_suffix, n_class):
+    files = os.listdir(pred_path)
+    confu_mat_total = np.zeros((n_class, n_class))
+    for item in files:
+        name = item.split('.')[0]
+        cur_pred = yimage.io.read_image(os.path.join(pred_path, name+pred_suffix))
+        cur_gt = yimage.io.read_image(os.path.join(gt_path, name + gt_suffix))
+        confu_mat_total+=cal_confusion(cur_gt.flatten(), cur_pred.flatten(), n_class)
+    print('OverallAccuracy, MeanF1, MeanIoU, Kappa, ClassIoU, ClassF1, ClassRecall, ClassPrecision ')
+    metrics = CM2Metric(confu_mat_total)
+    print(metrics)
 
 
 if __name__ == '__main__':
-    #################################################################
-    #  标签图像文件夹
-    LabelPath = r'U:\private\dongsj\CUG_seg\CHN6-CUG\train\gt'
-    #  预测图像文件夹
-    PredictPath = r'U:\private\dongsj\CUG_seg\1109_files\FANet50_v5_v1\val_visual\268\slice'
-    #  类别数目(包括背景)
-    classNum = 2
-    #################################################################
-    precision, recall, f1ccore, OA, IoU, mIOU = get_acc_info(PredictPath, LabelPath, classNum)
+    pppred = '/home/dsj/0code_hub/code220722_seg/0720_files/Res_UNet_34_test/test_big'
+    gggt = '/home/jicredt_data/dsj/dataset/test/mask'
+    pred_suffix = '.tif'
+    gt_suffix = '.png'
+
+    x = dir_metric(pppred, gggt, pred_suffix, gt_suffix, 48)
