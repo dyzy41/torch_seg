@@ -58,7 +58,7 @@ def main():
     # with open(os.path.join(param_dict['save_dir_model'], 'log.txt'), 'a') as ff:
     with open(os.path.join(param_dict['save_dir_model'], 'log.csv'),"w", newline='') as csvf:
         log_writer = csv.writer(csvf)
-        log_writer.writerow(["epoch", "learning_rate", "train_loss", "val_loss", "val_f1", "val_acc", "val_miou"])
+        log_writer.writerow(["epoch", "learning_rate", "train_loss", "val_loss", "val_f1", "val_acc", "val_miou", "TgtCheck"])
         log_data = []
         for epoch in range(start_epoch, param_dict['epoches']+1):
             model.train()
@@ -83,34 +83,37 @@ def main():
             lr_schedule.step()
             if epoch % param_dict['save_iter'] == 0:
                 OverallAccuracy, MeanF1, MeanIoU, Kappa, ClassIoU, ClassF1, ClassRecall, ClassPrecision, val_loss = eval(valloader, model, criterion, epoch)
+                TgtCheck = ClassIoU[1]
+                writer.add_scalar('TgtCheck', TgtCheck, epoch)
                 writer.add_scalar('val_miou', MeanIoU, epoch)
                 writer.add_scalar('val_acc', OverallAccuracy, epoch)
                 writer.add_scalar('val_f1', MeanF1, epoch)
                 writer.add_scalar('val_loss', val_loss, epoch)
-                cur_log = 'epoch:{}, learning_rate:{}, train_loss:{}, val_loss:{}, val_f1:{}, val_acc:{}, val_miou:{}\n'.format(
+                cur_log = 'epoch:{}, learning_rate:{}, train_loss:{}, val_loss:{}, val_f1:{}, val_acc:{}, val_miou, TgtCheck:{}\n'.format(
                     str(epoch), str(cur_lr), str(running_loss.item() / batch_num), str(val_loss), str(MeanF1),
                     str(OverallAccuracy),
-                    str(MeanIoU)
+                    str(MeanIoU),
+                    str(TgtCheck)
                 )
                 print(cur_log)
                 log_writer.writerow([epoch, cur_lr, running_loss.item() / batch_num, val_loss, MeanF1,
                     OverallAccuracy,
-                    MeanIoU])
+                    MeanIoU, TgtCheck])
                 log_data.append([epoch, cur_lr, running_loss.item() / batch_num, val_loss, MeanF1,
                     OverallAccuracy,
-                    MeanIoU])
+                    MeanIoU, TgtCheck])
                 checkpoint = {
                     "net": model.state_dict(),
                     'optimizer': optimizer.state_dict(),
                     'lr_schedule': lr_schedule.state_dict(),
                     "epoch": epoch
                 }
-                if MeanIoU > best_val_acc:
+                if TgtCheck > best_val_acc:
                     if param_dict['save_mode'] == 'best':
-                        torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'valiou_best.pth'))
+                        torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'val_best.pth'))
                     else:
-                        torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'valiou_best_{}_{}.pth'.format(epoch, MeanIoU)))
-                    best_val_acc = MeanIoU
+                        torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'val_best_{}_{}.pth'.format(epoch, TgtCheck)))
+                    best_val_acc = TgtCheck
                 tools.utils.vis_curve(info=log_data, save_path=os.path.join(param_dict['save_dir_model']))
             torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'last_model.pth'))
 
