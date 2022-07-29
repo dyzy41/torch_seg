@@ -82,14 +82,14 @@ def main():
             writer.add_scalar('train_loss', running_loss / batch_num, epoch)
             lr_schedule.step()
             if epoch % param_dict['save_iter'] == 0:
-                OverallAccuracy, MeanF1, MeanIoU, Kappa, ClassIoU, ClassF1, ClassRecall, ClassPrecision, val_loss = eval(valloader, model, criterion, epoch)
+                OverallAccuracy, MeanF1, MeanIoU, Kappa, ClassIoU, ClassF1, ClassRecall, ClassPrecision, val_loss = eval_step(valloader, model, criterion, epoch)
                 ExpTgt = eval(param_dict['ExpTgt'])
                 writer.add_scalar('ExpTgt', ExpTgt, epoch)
                 writer.add_scalar('val_miou', MeanIoU, epoch)
                 writer.add_scalar('val_acc', OverallAccuracy, epoch)
                 writer.add_scalar('val_f1', MeanF1, epoch)
                 writer.add_scalar('val_loss', val_loss, epoch)
-                cur_log = 'epoch:{}, learning_rate:{}, train_loss:{}, val_loss:{}, val_f1:{}, val_acc:{}, val_miou, ExpTgt:{}\n'.format(
+                cur_log = 'epoch:{}, learning_rate:{}, train_loss:{}, val_loss:{}, val_f1:{}, val_acc:{}, val_miou:{}, ExpTgt:{}\n'.format(
                     str(epoch), str(cur_lr), str(running_loss.item() / batch_num), str(val_loss), str(MeanF1),
                     str(OverallAccuracy),
                     str(MeanIoU),
@@ -118,7 +118,7 @@ def main():
             torch.save(checkpoint, os.path.join(param_dict['model_dir'], 'last_model.pth'))
 
 
-def eval(valloader, model, criterion, epoch):
+def eval_step(valloader, model, criterion, epoch):
     val_num = valloader.dataset.num_sample
     label_all = np.zeros((val_num,) + (param_dict['img_size'], param_dict['img_size']), np.uint8)
     predict_all = np.zeros((val_num,) + (param_dict['img_size'], param_dict['img_size']), np.uint8)
