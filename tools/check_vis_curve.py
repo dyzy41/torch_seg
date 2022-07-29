@@ -4,14 +4,17 @@ import os
 import sys
 import  matplotlib.pyplot as plt
 
-target = sys.argv[1]
-idx = sys.argv[2]
+# target = sys.argv[1]
+# idx = int(sys.argv[2])
+target = 'Iou'
+idx = 1
 
 tgt2Line = {'OA':0, 'kappa':1, 'mf1-score':2, 'mIou':3, 'precision':5, 'recall':7, 'f1-score':9, 'Iou':11}
 yaml_file = '../config.yaml'
 param_dict = parse_yaml(yaml_file)
 tgt_path = os.path.join(param_dict['save_dir_model'], 'val_visual')
 dirs = os.listdir(tgt_path)
+dirs = sorted(dirs, key=lambda x:int(x))
 save_iter = param_dict['save_iter']
 num_list = []
 for item in dirs:

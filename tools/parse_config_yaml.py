@@ -55,7 +55,7 @@ def update_param(param_dict):
     param_dict['pred_path'] = os.path.join(param_dict['save_dir_model'], param_dict['pred_path'])
     param_dict['pretrained_model'] = os.path.join(param_dict['pretrained_model'])
     if param_dict['color_table'] == 0:
-        param_dict['color_table'] = gen_color_map(param_dict['num_class'])
+        param_dict['color_table'] = gen_color_map(param_dict['num_class'] + 1 if param_dict['num_class'] == 1 else param_dict['num_class'])
     else:
         param_dict['color_table'] = list(np.asarray(param_dict['color_table'].split(',')).astype(np.int).reshape(-1, 3))
         param_dict['color_table'] = [tuple(i) for i in param_dict['color_table']]
