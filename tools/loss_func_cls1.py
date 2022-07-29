@@ -115,8 +115,8 @@ class TriLoss(nn.Module):
         self.ceb = nn.CrossEntropyLoss(weight=weights_b, reduction=reduction)
         self.BCE = nn.BCELoss()
 
-    def forward(self, output, target):
-        out, out_b, out_f = output
+    def forward(self, input, target):
+        out, out_b, out_f = input
         out = out.squeeze(1)
         losses1 = self.BCE(out, target.float())  # calculate loss
         losses_f = self.cef(out_f, target)  # calculate loss
@@ -146,13 +146,13 @@ class BinaryDiceLoss(nn.Module):
         self.p = p
         self.reduction = reduction
 
-    def forward(self, predict, target):
-        assert predict.shape[0] == target.shape[0], "predict & target batch size don't match"
-        predict = predict.contiguous().view(predict.shape[0], -1)
+    def forward(self, input, target):
+        assert input.shape[0] == target.shape[0], "input & target batch size don't match"
+        input = input.contiguous().view(input.shape[0], -1)
         target = target.contiguous().view(target.shape[0], -1)
 
-        num = torch.sum(torch.mul(predict, target), dim=1) + self.smooth
-        den = torch.sum(predict.pow(self.p) + target.pow(self.p), dim=1) + self.smooth
+        num = torch.sum(torch.mul(input, target), dim=1) + self.smooth
+        den = torch.sum(input.pow(self.p) + target.pow(self.p), dim=1) + self.smooth
 
         loss = 1 - num / den
 
@@ -173,9 +173,10 @@ class BCELoss(nn.Module):
         self.smooth = smooth
         self.BCE = nn.BCELoss()
 
-    def forward(self, output, target):
-        output = output.squeeze(1)
-        loss = self.BCE(output, target.float())
+    def forward(self, input, target):
+        input = F.sigmoid(input)
+        input = input.squeeze(1)
+        loss = self.BCE(input, target.float())
 
         return loss
 
@@ -187,12 +188,12 @@ class BCE_BDLoss(nn.Module):
         self.loss_weight = loss_weight
         self.edge_conv = EdgeConv().cuda()
 
-    def forward(self, output, target):
-        output = output.squeeze(1)
-        loss = self.BCE(output, target.float())
-        output_bd = self.edge_conv(output)
+    def forward(self, input, target):
+        input = input.squeeze(1)
+        loss = self.BCE(input, target.float())
+        input_bd = self.edge_conv(input)
         target_bd = self.edge_conv(target.float())
-        loss_bd = BoundaryLoss(output_bd, target_bd)
+        loss_bd = BoundaryLoss(input_bd, target_bd)
         return loss * self.loss_weight[0] + loss_bd * self.loss_weight[1]
 
 

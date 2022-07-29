@@ -1,5 +1,5 @@
 batch_size: 24  # 设置批量大小
-img_size: 512  # 输入图片大小
+img_size: 224  # 输入图片大小
 overlap: 64
 epoches: 800
 base_lr: 0.003  # 学习率
@@ -8,7 +8,7 @@ weight_decay: 2e-5
 momentum: 0.9
 power: 0.99
 gpu_id: '0'
-save_iter: 5
+save_iter: 10
 save_mode: 'all'  #best, all
 num_workers: 4
 val_visual: True
@@ -19,10 +19,11 @@ thread: 0.5
 color_table: 0
 class_weights: None
 tta: False
+ExpTgt: 'ClassIoU[1]'
 
 
 resume_ckpt: 0
-model_name: 'Res_UNet_50'  #
+model_name: 'HiFormer'  #
 pretrained_model: 'download'  # 'download', '', or pretrained model path
 extra_loss: False
 model_experision: 'v1'
@@ -33,7 +34,7 @@ vis_graph: False
 
 #data path
 root_path: '/home/jicredt_data/dsj/EXPHUB/whub'
-data_name: 'whub'
+data_name: 'whub224'
 exp_name: '0727'
 
 pred_path: 'test_result'

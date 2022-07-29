@@ -16,7 +16,7 @@ def read_data(p_dict):
 
 def save_data(img_s, lab_s, p_img, p_lab):
     yimage.io.write_image(p_img, img_s)
-    yimage.io.write_image(p_lab, lab_s)
+    yimage.io.write_image(p_lab, lab_s, color_table=ct)
     # cv2.imwrite(p_lab, lab_s)
 
 
@@ -35,8 +35,8 @@ def cut_data(cut_size, over_lap, save_dir):
     path_list = gen_dict()
     if os.path.exists(save_dir) is False:
         os.mkdir(save_dir)
-        os.mkdir(os.path.join(save_dir, 'image_train'))
-        os.mkdir(os.path.join(save_dir, 'label_train'))
+        os.mkdir(os.path.join(save_dir, 'image'))
+        os.mkdir(os.path.join(save_dir, 'label'))
 
     for i in tqdm.tqdm(range(len(path_list))):
         img_name = path_list[i][0].replace('\\', '/').split('/')[-1].replace('.' + img_suffix, '')
@@ -74,8 +74,8 @@ def cut_data(cut_size, over_lap, save_dir):
                 lab_s = slice_lab[down - cut_size:down, :]
 
                 nj += 1
-                save_data(img_s, lab_s, os.path.join(save_dir, 'image_train', '{}_{}_{}.{}'.format(img_name, ni, nj, img_suffix)),
-                          os.path.join(save_dir, 'label_train', '{}_{}_{}.{}'.format(lab_name, ni, nj, lab_suffix)))
+                save_data(img_s, lab_s, os.path.join(save_dir, 'image', '{}_{}_{}.{}'.format(img_name, ni, nj, img_suffix)),
+                          os.path.join(save_dir, 'label', '{}_{}_{}.{}'.format(lab_name, ni, nj, lab_suffix)))
                 down = down + cut_size - over_lap
             down = cut_size
             left = left + cut_size - over_lap
@@ -84,11 +84,13 @@ def cut_data(cut_size, over_lap, save_dir):
 
 
 if __name__ == '__main__':
-    big_img_path = r'F:\0Fcode\code220215_imgsegDL\dataset\image'
-    big_gt_path = r'F:\0Fcode\code220215_imgsegDL\dataset\label'
-    cut_size = 512
+    state = 'val'
+    ct = [(0,0,0), (255,255,255)]
+    big_img_path = '/home/dsj/0DATASET/whub/{}/image'.format(state)
+    big_gt_path = '/home/dsj/0DATASET/whub/{}/label'.format(state)
+    cut_size = 224
     over_lap = 64
-    save_dir = r'F:\0Fcode\code220215_imgsegDL\dataset\data_slice'
-    img_suffix = 'jpg'
-    lab_suffix = 'png'
+    save_dir = '/home/dsj/0DATASET/whub224/{}'.format(state)
+    img_suffix = 'tif'
+    lab_suffix = 'tif'
     cut_data(cut_size, over_lap, save_dir)

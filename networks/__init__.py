@@ -11,3 +11,5 @@ from networks.mfnet.mfnet_v3 import MFNet50_v3
 from networks.non_local.DSANet import DSANet
 from networks.a2fpn.a2fpn import A2FPN
 from networks.bisenet.bisenet import BiSeNet
+from networks.HiFormer.HiFormer import HiFormer
+

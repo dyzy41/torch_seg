@@ -3,22 +3,23 @@ from einops.layers.torch import Rearrange
 
 from .Encoder import DLF
 from .Decoder import ConvUpsample, SegmentationHead
+from .hiformer_config import *
 
 
 class HiFormer(nn.Module):
-    def __init__(self, config, img_size=224, in_chans=3, n_classes=9):
+    def __init__(self, in_c, num_class, pretrained_path=None, config=get_hiformer_s_configs(), img_size=224):
         super().__init__()
         self.img_size = img_size
         self.patch_size = [4, 16]
-        self.n_classes = n_classes
-        self.DLF = DLF(config=config, img_size=img_size, in_chans=in_chans)
+        self.n_classes = num_class
+        self.DLF = DLF(config=config, img_size=img_size, in_chans=in_c)
 
         self.ConvUp_s = ConvUpsample(in_chans=384, out_chans=[128, 128], upsample=True)
         self.ConvUp_l = ConvUpsample(in_chans=96, upsample=False)
 
         self.segmentation_head = SegmentationHead(
             in_channels=16,
-            out_channels=n_classes,
+            out_channels=num_class,
             kernel_size=3,
         )
 
